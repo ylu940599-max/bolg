@@ -23,19 +23,19 @@
     
 
     
-<link rel="stylesheet" href="/bolg/css/style.css">
+<link rel="stylesheet" href="/css/style.css">
 
     
-<link rel="stylesheet" href="/bolg/css/color.css">
+<link rel="stylesheet" href="/css/color.css">
 
     
-<link rel="stylesheet" href="/bolg/css/widgets/index/post-card.css">
+<link rel="stylesheet" href="/css/widgets/index/post-card.css">
 
     
-<link rel="stylesheet" href="/bolg/css/widgets/page-transition.css">
+<link rel="stylesheet" href="/css/widgets/page-transition.css">
 
     
-<link rel="stylesheet" href="/bolg/css/widgets/loading.css">
+<link rel="stylesheet" href="/css/widgets/loading.css">
 
 
     
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <mdui-button-icon class="appbar-menu-button">
         <mdui-icon name="menu"></mdui-icon>
     </mdui-button-icon>
-    <mdui-top-app-bar-title onclick="window.location.href='/bolg/'" style="cursor: pointer;">
+    <mdui-top-app-bar-title onclick="window.location.href='/'" style="cursor: pointer;">
         喻清洛的知识小屋
     </mdui-top-app-bar-title>
 
@@ -423,7 +423,7 @@ class HexoSearch {
 
     async preloadSearchData() {
         try {
-            const response = await fetch('/bolg/search.json');
+            const response = await fetch('/search.json');
             this.searchData = await response.json();
         } catch (error) {
             console.error('搜索数据加载失败:', error);
@@ -1329,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/"
+                    href="/"
                     rounded
                     
                     active
@@ -1341,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/diary/"
+                    href="/diary/"
                     rounded
                     
                     variant="filled"
@@ -1353,7 +1353,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/categories/"
+                    href="/categories/"
                     rounded
                     
                     variant="filled"
@@ -1365,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/tags/"
+                    href="/tags/"
                     rounded
                     
                     variant="filled"
@@ -1377,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/about/"
+                    href="/about/"
                     rounded
                     
                     variant="filled"
@@ -1389,7 +1389,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/links/"
+                    href="/links/"
                     rounded
                     
                     variant="filled"
@@ -1401,7 +1401,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/shuoshuo/"
+                    href="/shuoshuo/"
                     rounded
                     
                     variant="filled"
@@ -1413,7 +1413,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/message/"
+                    href="/message/"
                     rounded
                     
                     variant="filled"
@@ -1453,7 +1453,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/"
+                    href="/"
                     rounded
                     
                     active
@@ -1465,7 +1465,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/diary/"
+                    href="/diary/"
                     rounded
                     
                     variant="filled"
@@ -1477,7 +1477,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/categories/"
+                    href="/categories/"
                     rounded
                     
                     variant="filled"
@@ -1489,7 +1489,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/tags/"
+                    href="/tags/"
                     rounded
                     
                     variant="filled"
@@ -1501,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/about/"
+                    href="/about/"
                     rounded
                     
                     variant="filled"
@@ -1513,7 +1513,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/links/"
+                    href="/links/"
                     rounded
                     
                     variant="filled"
@@ -1525,7 +1525,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/shuoshuo/"
+                    href="/shuoshuo/"
                     rounded
                     
                     variant="filled"
@@ -1537,7 +1537,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                 <mdui-list-item 
                     class="nav-item"
-                    href="/bolg/message/"
+                    href="/message/"
                     rounded
                     
                     variant="filled"
@@ -1859,7 +1859,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <mdui-chip variant="filled" class="footer-chip">
           <mdui-icon name="copyright" slot="icon"></mdui-icon>
           &copy; 2026 
-          <a href="/bolg/" class="site-link">喻清洛的知识小屋</a>
+          <a href="/" class="site-link">喻清洛的知识小屋</a>
           
             · 保留所有权利
           
