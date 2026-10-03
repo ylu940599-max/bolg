@@ -1,0 +1,3666 @@
+<!DOCTYPE html>
+<html lang="zh-CN"">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 性能优化：预连接 CDN，减少 DNS/TLS 握手延迟 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://lib.baomitu.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.staticfile.org" crossorigin>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <link rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css">
+    <script defer src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script defer src="//lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+    
+        <link rel="stylesheet" href="/fonts/lxwk/lxwk.css">
+    
+
+    
+<link rel="stylesheet" href="/bolg/css/style.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/color.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/widgets/index/post-card.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/widgets/page-transition.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/widgets/loading.css">
+
+
+    
+        <mdui-dialog id="interceptDialog" class="interceptor-dialog" close-on-overlay-click>
+  <div class="mdui-dialog-title">即将离开本站</div>
+  <div class="mdui-dialog-content">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <mdui-icon name="open_in_new" style="font-size: 48px; color: var(--mdui-color-primary);"></mdui-icon>
+    </div>
+    <p>您即将访问外部网站：</p>
+    <div class="link-info">
+      <strong id="interceptLinkText">链接文本</strong>
+      <br>
+      <small style="color: var(--mdui-color-on-surface-variant);" id="interceptDomain">域名</small>
+    </div>
+    <div class="mdui-typo-caption" style="margin-top: 16px; color: var(--mdui-color-on-surface-variant);">
+      <mdui-icon name="info" size="small"></mdui-icon>
+      请注意：外部网站的内容和安全性不在本站控制范围内
+    </div>
+  </div>
+  <div class="mdui-dialog-actions">
+    <mdui-button id="cancelBtn">取消</mdui-button>
+    <mdui-button variant="filled" id="continueBtn">继续访问</mdui-button>
+  </div>
+</mdui-dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // 获取对话框元素
+  const interceptDialog = document.querySelector('#interceptDialog');
+  const continueBtn = document.querySelector('#continueBtn');
+  const cancelBtn = document.querySelector('#cancelBtn');
+  
+  // 存储当前点击的链接
+  let currentLink = null;
+
+  // 图片文件后缀列表
+  const imageExtensions = [
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', 
+    '.svg', '.ico', '.tiff', '.tif', '.avif', '.heic'
+  ];
+
+  // 拦截所有外部链接的点击事件
+  document.addEventListener('click', function(e) {
+    let target = e.target;
+    
+    // 向上查找链接元素
+    while (target && target.tagName !== 'A') {
+      target = target.parentElement;
+    }
+    
+    if (target && target.tagName === 'A') {
+      const href = target.getAttribute('href');
+      
+      // 只拦截外部链接，但不拦截图片链接
+      if (href && isExternalLink(href) && !isImageLink(href)) {
+        e.preventDefault();
+        currentLink = href;
+        showInterceptionDialog(href, target.textContent || target.title || '未知网站');
+      }
+    }
+  });
+
+  // 判断是否为外部链接
+  function isExternalLink(href) {
+    return (
+      href.startsWith('http://') ||
+      href.startsWith('https://') ||
+      href.startsWith('//') ||
+      href.startsWith('mailto:') ||
+      href.startsWith('tel:')
+    );
+  }
+
+  // 判断是否为图片链接
+  function isImageLink(href) {
+    const lowerHref = href.toLowerCase();
+    return imageExtensions.some(ext => lowerHref.endsWith(ext));
+  }
+
+  // 显示拦截对话框
+  function showInterceptionDialog(url, linkText) {
+    const domain = new URL(url, window.location.origin).hostname;
+    
+    // 更新对话框内容
+    document.getElementById('interceptLinkText').textContent = linkText;
+    document.getElementById('interceptDomain').textContent = domain;
+    
+    // 打开对话框
+    interceptDialog.open = true;
+  }
+
+  // 继续访问按钮点击事件
+  continueBtn.addEventListener('click', function() {
+    if (currentLink) {
+      window.open(currentLink, '_blank', 'noopener,noreferrer');
+      interceptDialog.open = false;
+      currentLink = null;
+    }
+  });
+
+  // 取消按钮点击事件
+  cancelBtn.addEventListener('click', function() {
+    interceptDialog.open = false;
+    currentLink = null;
+  });
+
+  interceptDialog.addEventListener('close', function() {
+    currentLink = null;
+  });
+});
+</script>
+
+<style>
+/* 对话框内容样式 */
+.interceptor-dialog {
+  background-color: rgba(var(--mdui-color-surface), 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(var(--mdui-color-outline), 0.1) !important;
+}
+
+.interceptor-dialog .mdui-dialog-title {
+  font-weight: 600;
+  text-align: center;
+  padding: 24px 24px 0;
+  color: var(--mdui-color-on-surface);
+}
+
+.interceptor-dialog .mdui-dialog-content {
+  padding: 20px 24px;
+  color: var(--mdui-color-on-surface-variant);
+}
+
+.interceptor-dialog .link-info {
+  background: rgba(var(--mdui-color-primary), 0.08);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  text-align: center;
+  border: 1px solid rgba(var(--mdui-color-primary), 0.2);
+}
+
+.interceptor-dialog .mdui-dialog-actions {
+  padding: 8px 24px 24px;
+  justify-content: flex-end;
+  gap: 8px;
+}
+</style>
+    
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+<body>
+    <!-- MD3 加载动画遮罩：内联在 body 首部，确保首屏即时显示 -->
+    <div id="md3-loading-overlay" class="md3-loading-overlay" aria-hidden="true">
+        <div class="md3-loading-brand">喻清洛的知识小屋</div>
+        <div class="md3-loading-spinner" role="status" aria-label="Loading"></div>
+    </div>
+
+    <mdui-top-app-bar variant="center-aligned" scroll-behavior="elevate" class="top-app-bar">
+    <mdui-button-icon class="appbar-menu-button">
+        <mdui-icon name="menu"></mdui-icon>
+    </mdui-button-icon>
+    <mdui-top-app-bar-title onclick="window.location.href='/bolg/'" style="cursor: pointer;">
+        喻清洛的知识小屋
+    </mdui-top-app-bar-title>
+
+    <!-- 桌面端：所有按钮平铺显示 -->
+    <div class="appbar-actions-desktop">
+        <mdui-dropdown>
+            <div slot="trigger">
+                <mdui-tooltip content="显示模式">
+                    <mdui-button-icon>
+                        <mdui-icon name="auto_mode" class="appbar-display-mode-icon"></mdui-icon>
+                    </mdui-button-icon>
+                </mdui-tooltip>
+            </div>
+            <mdui-menu selects="single" value="auto" class="appbar-display-mode">
+                <mdui-menu-item value="light">亮色模式</mdui-menu-item>
+                <mdui-menu-item value="dark">暗色模式</mdui-menu-item>
+                <mdui-divider></mdui-divider>
+                <mdui-menu-item value="auto">跟随系统</mdui-menu-item>
+            </mdui-menu>
+        </mdui-dropdown>
+
+        <!-- 搜索按钮 -->
+<mdui-button-icon id="search-toggle">
+    <mdui-icon name="search"></mdui-icon>
+</mdui-button-icon>
+
+<!-- 搜索弹窗 -->
+<mdui-dialog id="search-dialog" close-on-esc close-on-overlay-click class="search-dialog">
+    <div class="search-header">
+        <mdui-text-field class="search-input" placeholder="搜索文章、标签、分类..." id="search-input">
+            <mdui-icon name="search" slot="icon"></mdui-icon>
+        </mdui-text-field>
+        <mdui-button-icon class="close-btn" id="search-close">
+            <mdui-icon name="close"></mdui-icon>
+        </mdui-button-icon>
+    </div>
+
+    <div class="search-content">
+        <div id="search-results" class="search-results">
+            <div class="search-placeholder">
+                <mdui-icon name="search"></mdui-icon>
+                <div>输入关键词开始搜索</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-footer">
+        <span class="result-count" id="result-count"></span>
+        <mdui-button id="search-close-btn">关闭</mdui-button>
+    </div>
+</mdui-dialog>
+
+<style>
+.search-dialog::part(overlay) {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%); /* Safari 支持 */
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.search-dialog {
+    --mdui-dialog-width: 600px;
+    --mdui-dialog-height: 70vh;
+}
+
+.search-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px 0;
+    margin-bottom: 16px;
+}
+
+.search-input {
+    flex: 1;
+}
+
+.close-btn {
+    margin-left: auto;
+}
+
+.search-content {
+    padding: 0 24px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.search-results {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+    background: var(--mdui-color-surface-container);
+}
+
+.search-results::-webkit-scrollbar-thumb {
+    background: var(--mdui-color-outline-variant);
+    border-radius: 3px;
+}
+
+.search-placeholder {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+.search-placeholder mdui-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.search-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid var(--mdui-color-outline-variant);
+}
+
+.result-count {
+    font-size: 0.875rem;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+.search-result-item {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--mdui-color-outline-variant);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--mdui-color-surface);
+}
+
+.search-result-item:hover {
+    background: var(--mdui-color-surface-container-hover);
+    border-color: var(--mdui-color-primary);
+    transform: translateY(-2px);
+}
+
+.search-result-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--mdui-color-on-surface);
+    margin-bottom: 8px;
+}
+
+.search-result-content {
+    color: var(--mdui-color-on-surface-variant);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.search-result-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+.search-highlight {
+    background: var(--mdui-color-primary-container);
+    color: var(--mdui-color-on-primary-container);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.no-results, .search-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+@media (max-width: 600px) {
+    .search-dialog {
+        --mdui-dialog-width: 95vw;
+        --mdui-dialog-height: 80vh;
+    }
+    
+    .search-header {
+        padding: 16px 16px 0;
+    }
+    
+    .search-content {
+        padding: 0 16px;
+    }
+    
+    .search-footer {
+        padding: 12px 16px;
+    }
+}
+</style>
+
+<script>
+class HexoSearch {
+    constructor() {
+        this.searchData = null;
+        this.dialog = document.getElementById('search-dialog');
+        this.init();
+    }
+
+    async init() {
+        this.bindEvents();
+        this.preloadSearchData();
+    }
+
+    async preloadSearchData() {
+        try {
+            const response = await fetch('/bolg/search.json');
+            this.searchData = await response.json();
+        } catch (error) {
+            console.error('搜索数据加载失败:', error);
+        }
+    }
+
+    bindEvents() {
+        const searchToggle = document.getElementById('search-toggle');
+        const searchInput = document.getElementById('search-input');
+        const searchClose = document.getElementById('search-close');
+        const searchCloseBtn = document.getElementById('search-close-btn');
+
+        searchToggle.addEventListener('click', () => {
+            this.dialog.open = true;
+            setTimeout(() => searchInput.focus(), 100);
+        });
+
+        const closeDialog = () => {
+            this.dialog.open = false;
+            searchInput.value = '';
+            this.showPlaceholder();
+        };
+
+        searchClose.addEventListener('click', closeDialog);
+        searchCloseBtn.addEventListener('click', closeDialog);
+
+        searchInput.addEventListener('input', this.debounce((e) => {
+            this.performSearch(e.target.value);
+        }, 300));
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchToggle.click();
+            }
+        });
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), wait);
+        };
+    }
+
+    performSearch(query) {
+        if (!query.trim()) {
+            this.showPlaceholder();
+            return;
+        }
+
+        if (!this.searchData) {
+            this.showError('搜索数据加载中...');
+            return;
+        }
+
+        const results = this.searchPosts(query);
+        this.displayResults(results, query);
+    }
+
+    searchPosts(query) {
+        const keywords = query.toLowerCase().split(' ').filter(k => k);
+        const allItems = [...(this.searchData.posts || []), ...(this.searchData.pages || [])];
+        
+        return allItems
+            .map(item => {
+                let score = 0;
+                const title = item.title || '';
+                const content = item.content || '';
+
+                keywords.forEach(keyword => {
+                    if (title.toLowerCase().includes(keyword)) score += 10;
+                    if (content.toLowerCase().includes(keyword)) score += 2;
+                    if (item.tags?.some(tag => tag.toLowerCase().includes(keyword))) score += 5;
+                    if (item.categories?.some(cat => cat.toLowerCase().includes(keyword))) score += 3;
+                });
+
+                return { ...item, score };
+            })
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20);
+    }
+
+    displayResults(results, query) {
+        const container = document.getElementById('search-results');
+        const countElement = document.getElementById('result-count');
+        
+        if (results.length === 0) {
+            container.innerHTML = `
+                <div class="no-results">
+                    <mdui-icon name="search_off" style="font-size: 48px; margin-bottom: 16px;"></mdui-icon>
+                    <div>没有找到包含 "${this.escapeHtml(query)}" 的内容</div>
+                </div>
+            `;
+            countElement.textContent = '';
+            return;
+        }
+
+        container.innerHTML = results.map(item => this.createResultItem(item, query)).join('');
+        countElement.textContent = `找到 ${results.length} 个结果`;
+        
+        container.querySelectorAll('.search-result-item').forEach((item, index) => {
+            item.addEventListener('click', () => {
+                window.location.href = results[index].url;
+                this.dialog.open = false;
+            });
+        });
+    }
+
+    createResultItem(item, query) {
+        const title = item.title || '无标题';
+        const content = item.content || '';
+        const highlightedTitle = this.highlightText(title, query);
+        const excerpt = this.createExcerpt(content, query);
+
+        return `
+            <div class="search-result-item">
+                <div class="search-result-title">
+                    <mdui-icon name="article" style="font-size: 16px;"></mdui-icon>
+                    ${highlightedTitle}
+                </div>
+                <div class="search-result-content">${excerpt}</div>
+                <div class="search-result-meta">
+                    ${item.date ? `<span>${item.date}</span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    highlightText(text, query) {
+        let highlighted = this.escapeHtml(text);
+        query.toLowerCase().split(' ').filter(k => k).forEach(keyword => {
+            const regex = new RegExp(`(${this.escapeRegex(keyword)})`, 'gi');
+            highlighted = highlighted.replace(regex, '<span class="search-highlight">$1</span>');
+        });
+        return highlighted;
+    }
+
+    createExcerpt(content, query) {
+        const keywords = query.toLowerCase().split(' ').filter(k => k);
+        let excerpt = this.escapeHtml(content.substring(0, 120));
+        
+        keywords.forEach(keyword => {
+            const regex = new RegExp(`(${this.escapeRegex(keyword)})`, 'gi');
+            excerpt = excerpt.replace(regex, '<span class="search-highlight">$1</span>');
+        });
+
+        return excerpt + (content.length > 120 ? '...' : '');
+    }
+
+    escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    escapeHtml(unsafe) {
+        return unsafe.replace(/[&<>"']/g, m => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[m]));
+    }
+
+    showPlaceholder() {
+        document.getElementById('search-results').innerHTML = `
+            <div class="search-placeholder">
+                <mdui-icon name="search"></mdui-icon>
+                <div>输入关键词开始搜索</div>
+            </div>
+        `;
+        document.getElementById('result-count').textContent = '';
+    }
+
+    showError(message) {
+        document.getElementById('search-results').innerHTML = `
+            <div class="no-results">${message}</div>
+        `;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => new HexoSearch());
+</script>
+        <!-- 动态配色选择器组件 -->
+<mdui-tooltip content="动态配色">
+  <mdui-button-icon id="color-picker-trigger" class="color-picker-icon">
+    <mdui-icon name="palette"></mdui-icon>
+  </mdui-button-icon>
+</mdui-tooltip>
+
+<mdui-dialog id="color-picker-dialog" class="dynamic-color-dialog" close-on-overlay-click>
+  <div class="mdui-dialog-title">动态配色</div>
+  <div class="mdui-dialog-content">
+
+    <!-- 预设颜色网格 -->
+    <div class="color-section">
+      <div class="section-label">推荐配色</div>
+      <div class="preset-colors" id="preset-colors"></div>
+    </div>
+
+    <mdui-divider class="color-divider"></mdui-divider>
+
+    <!-- 自定义颜色 -->
+    <div class="color-section">
+      <div class="section-label">自定义颜色</div>
+      <div class="custom-row">
+        <input type="color" id="native-color-picker" class="native-color-picker" value="#6750a4">
+        <input type="text" id="color-hex-input" class="color-hex-input" value="#6750a4" maxlength="7" placeholder="#000000">
+        <mdui-button id="random-color-btn" variant="tonal" icon="shuffle">随机</mdui-button>
+      </div>
+    </div>
+
+    <!-- 实时预览 -->
+    <div class="color-preview-card" id="color-preview-card">
+      <div class="preview-label">实时预览</div>
+      <div class="preview-row">
+        <div id="preview-primary" class="preview-swatch preview-swatch-primary"></div>
+        <div id="preview-on-primary" class="preview-swatch preview-swatch-on-primary">Aa</div>
+      </div>
+      <div class="preview-row">
+        <div id="preview-container" class="preview-swatch preview-swatch-container">
+          <span id="preview-on-container">主色容器</span>
+        </div>
+      </div>
+    </div>
+
+    <mdui-divider class="color-divider"></mdui-divider>
+
+    <div class="color-section">
+      <mdui-button id="reset-color-btn" variant="tonal" icon="refresh" full-width>重置为默认配色</mdui-button>
+    </div>
+
+  </div>
+  <div class="mdui-dialog-actions">
+    <mdui-button id="cancel-color-btn">取消</mdui-button>
+    <mdui-button variant="filled" id="apply-color-btn" icon="check">应用</mdui-button>
+  </div>
+</mdui-dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // MD3 官方推荐基准色
+  const PRESET_COLORS = [
+    '#6750a4', '#65558f', '#7d5260', '#7c5e00',
+    '#006a6a', '#0061a4', '#8b5000', '#5b6100',
+    '#9a471a', '#006874', '#3a6151', '#81531b'
+  ];
+
+  const trigger = document.getElementById('color-picker-trigger');
+  const dialog = document.getElementById('color-picker-dialog');
+  const cancelBtn = document.getElementById('cancel-color-btn');
+  const applyBtn = document.getElementById('apply-color-btn');
+  const nativePicker = document.getElementById('native-color-picker');
+  const hexInput = document.getElementById('color-hex-input');
+  const resetBtn = document.getElementById('reset-color-btn');
+  const randomBtn = document.getElementById('random-color-btn');
+  const presetContainer = document.getElementById('preset-colors');
+  const previewPrimary = document.getElementById('preview-primary');
+  const previewOnPrimary = document.getElementById('preview-on-primary');
+  const previewContainer = document.getElementById('preview-container');
+  const previewOnContainer = document.getElementById('preview-on-container');
+  const previewCard = document.getElementById('color-preview-card');
+
+  let selectedColor = nativePicker.value;
+  const STORAGE_KEY = 'materialis-color-scheme';
+
+  // 生成预设色按钮
+  function renderPresets() {
+    presetContainer.innerHTML = PRESET_COLORS.map((c, i) =>
+      '<button class="preset-item" data-color="' + c + '" style="background:' + c + ';animation-delay:' + (i * 30) + 'ms">' +
+      '<mdui-icon name="check" class="preset-check"></mdui-icon></button>'
+    ).join('');
+    presetContainer.querySelectorAll('.preset-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedColor = btn.dataset.color;
+        nativePicker.value = selectedColor;
+        hexInput.value = selectedColor;
+        updatePresetSelected(selectedColor);
+        updatePreview(selectedColor);
+      });
+    });
+  }
+
+  function updatePresetSelected(color) {
+    presetContainer.querySelectorAll('.preset-item').forEach(btn => {
+      btn.classList.toggle('is-selected', btn.dataset.color.toLowerCase() === (color || '').toLowerCase());
+    });
+  }
+
+  function isValidColor(c) {
+    return /^#([A-Fa-f0-9]{6})$/.test(c);
+  }
+
+  function hexToRgb(hex) {
+    return {
+      r: parseInt(hex.slice(1, 3), 16),
+      g: parseInt(hex.slice(3, 5), 16),
+      b: parseInt(hex.slice(5, 7), 16)
+    };
+  }
+
+  function blend(fg, bg, alpha) {
+    return {
+      r: Math.round(fg.r * alpha + bg.r * (1 - alpha)),
+      g: Math.round(fg.g * alpha + bg.g * (1 - alpha)),
+      b: Math.round(fg.b * alpha + bg.b * (1 - alpha))
+    };
+  }
+
+  function rgbStr(c) { return 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')'; }
+
+  // 实时预览：模拟 M3 primary / on-primary / container 配色关系
+  function updatePreview(color) {
+    if (!color || !isValidColor(color)) return;
+    const p = hexToRgb(color);
+    const lum = (0.299 * p.r + 0.587 * p.g + 0.114 * p.b) / 255;
+    const onP = lum > 0.5 ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+    const bg = lum > 0.5 ? { r: 30, g: 26, b: 32 } : { r: 255, g: 251, b: 254 };
+    const container = blend(p, bg, 0.18);
+    const onContainer = blend(p, bg, 0.72);
+
+    previewPrimary.style.backgroundColor = rgbStr(p);
+    previewOnPrimary.style.backgroundColor = rgbStr(p);
+    previewOnPrimary.style.color = rgbStr(onP);
+    previewContainer.style.backgroundColor = rgbStr(container);
+    previewOnContainer.style.color = rgbStr(onContainer);
+
+    // 预览脉冲
+    previewCard.classList.remove('pulse');
+    void previewCard.offsetWidth;
+    previewCard.classList.add('pulse');
+  }
+
+  function applyColorScheme(color) {
+    if (typeof mdui !== 'undefined' && mdui.setColorScheme) {
+      mdui.setColorScheme(color);
+    }
+  }
+
+  function removeColorScheme() {
+    if (typeof mdui !== 'undefined' && mdui.removeColorScheme) {
+      mdui.removeColorScheme();
+    }
+  }
+
+  function saveColorScheme(color) {
+    try {
+      if (color && isValidColor(color)) localStorage.setItem(STORAGE_KEY, color);
+      else localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {}
+  }
+
+  function loadSavedColorScheme() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved && isValidColor(saved)) {
+        applyColorScheme(saved);
+        nativePicker.value = saved;
+        hexInput.value = saved;
+        selectedColor = saved;
+        updatePresetSelected(saved);
+        updatePreview(saved);
+      }
+    } catch (e) {}
+  }
+
+  // 事件绑定
+  trigger.addEventListener('click', () => {
+    dialog.open = true;
+    // 触发预设色入场动画
+    presetContainer.classList.remove('anim-ready');
+    void presetContainer.offsetWidth;
+    presetContainer.classList.add('anim-ready');
+  });
+
+  cancelBtn.addEventListener('click', () => { dialog.open = false; });
+
+  nativePicker.addEventListener('input', () => {
+    selectedColor = nativePicker.value;
+    hexInput.value = selectedColor;
+    updatePresetSelected(selectedColor);
+    updatePreview(selectedColor);
+  });
+
+  hexInput.addEventListener('input', () => {
+    let v = hexInput.value.trim();
+    if (v && !v.startsWith('#')) v = '#' + v;
+    if (isValidColor(v)) {
+      selectedColor = v;
+      nativePicker.value = v;
+      updatePresetSelected(v);
+      updatePreview(v);
+    }
+  });
+
+  applyBtn.addEventListener('click', () => {
+    if (selectedColor && isValidColor(selectedColor)) {
+      applyColorScheme(selectedColor);
+      saveColorScheme(selectedColor);
+      mdui.snackbar({ message: '配色已应用', placement: 'bottom', timeout: 2000, icon: 'palette' });
+      dialog.open = false;
+    } else {
+      mdui.snackbar({ message: '请输入有效的颜色值', placement: 'bottom', timeout: 2000 });
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    removeColorScheme();
+    saveColorScheme(null);
+    selectedColor = '#6750a4';
+    nativePicker.value = selectedColor;
+    hexInput.value = selectedColor;
+    updatePresetSelected('');
+    updatePreview(selectedColor);
+    mdui.snackbar({ message: '配色已重置', placement: 'bottom', timeout: 2000, icon: 'refresh' });
+  });
+
+  randomBtn.addEventListener('click', () => {
+    const c = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    selectedColor = c;
+    nativePicker.value = c;
+    hexInput.value = c;
+    updatePresetSelected(c);
+    updatePreview(c);
+  });
+
+  // 初始化
+  renderPresets();
+  loadSavedColorScheme();
+  updatePreview(selectedColor);
+});
+</script>
+
+<style>
+.dynamic-color-dialog::part(overlay) {
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    background: rgba(0, 0, 0, 0.38);
+}
+
+.dynamic-color-dialog {
+    --mdui-dialog-width: 400px;
+    --mdui-dialog-max-height: 90vh;
+}
+
+.dynamic-color-dialog::part(panel) {
+    animation: colorPanelIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes colorPanelIn {
+    from { opacity: 0; transform: scale(0.94) translateY(-10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.mdui-dialog-title {
+    text-align: center;
+    padding: 22px 24px 4px;
+    font-weight: 600;
+    font-size: 1.15rem;
+}
+
+.mdui-dialog-content {
+    padding: 12px 24px 8px;
+}
+
+.mdui-dialog-actions {
+    padding: 8px 24px 20px;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.color-section {
+    margin-bottom: 14px;
+}
+
+.color-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.color-divider {
+    margin: 14px 0;
+}
+
+/* ===== 预设色网格 ===== */
+.preset-colors {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+
+.preset-item {
+    position: relative;
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.anim-ready .preset-item {
+    animation: presetIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes presetIn {
+    to { opacity: 1; transform: scale(1); }
+}
+
+.preset-item:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.14);
+}
+
+.preset-item.is-selected {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgb(var(--mdui-color-primary)), 0 4px 10px rgba(0,0,0,0.12);
+}
+
+.preset-check {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    color: #fff;
+    font-size: 20px !important;
+    opacity: 0;
+    transform: scale(0.3) rotate(-20deg);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+.preset-item.is-selected .preset-check {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+}
+
+/* ===== 自定义颜色行 ===== */
+.custom-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.native-color-picker {
+    width: 52px;
+    height: 44px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+
+.native-color-picker:hover {
+    transform: translateY(-2px);
+}
+
+.native-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.native-color-picker::-webkit-color-swatch {
+    border: 1px solid rgb(var(--mdui-color-outline-variant));
+    border-radius: 10px;
+}
+.native-color-picker::-moz-color-swatch {
+    border: 1px solid rgb(var(--mdui-color-outline-variant));
+    border-radius: 10px;
+}
+
+.color-hex-input {
+    width: 100%;
+    height: 44px;
+    border: 1px solid rgb(var(--mdui-color-outline-variant));
+    border-radius: 10px;
+    background: rgb(var(--mdui-color-surface-container-low));
+    color: rgb(var(--mdui-color-on-surface));
+    font-family: monospace;
+    font-size: 0.95rem;
+    text-align: center;
+    text-transform: lowercase;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.color-hex-input:focus {
+    border-color: rgb(var(--mdui-color-primary));
+    box-shadow: 0 0 0 3px rgb(var(--mdui-color-primary) / 0.12);
+}
+
+/* ===== 预览卡片 ===== */
+.color-preview-card {
+    background: rgb(var(--mdui-color-surface-container-low));
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 14px;
+    border: 1px solid rgba(var(--mdui-color-outline-variant), 0.3);
+    transition: box-shadow 0.3s ease;
+}
+
+.color-preview-card.pulse {
+    animation: previewPulse 0.5s ease;
+}
+
+@keyframes previewPulse {
+    0%   { box-shadow: 0 0 0 0 rgb(var(--mdui-color-primary) / 0.25); }
+    60%  { box-shadow: 0 0 0 10px rgb(var(--mdui-color-primary) / 0); }
+    100% { box-shadow: 0 0 0 0 rgb(var(--mdui-color-primary) / 0); }
+}
+
+.preview-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.preview-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.preview-row:last-child {
+    margin-bottom: 0;
+}
+
+.preview-swatch {
+    height: 38px;
+    border-radius: 10px;
+    transition: background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s ease;
+}
+
+.preview-swatch-primary {
+    flex: 0 0 38px;
+    width: 38px;
+}
+
+.preview-swatch-on-primary {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+}
+
+.preview-swatch-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#preview-on-container {
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.35s ease;
+}
+
+/* 触发按钮 */
+.color-picker-icon {
+    color: rgb(var(--mdui-color-on-surface-variant));
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+
+.color-picker-icon:hover {
+    color: rgb(var(--mdui-color-primary));
+    transform: rotate(-15deg) scale(1.08);
+}
+
+@media (max-width: 600px) {
+    .dynamic-color-dialog { --mdui-dialog-width: 92vw; }
+    .preset-colors { gap: 8px; }
+    .mdui-dialog-content { padding: 12px 18px 8px; }
+    .mdui-dialog-actions { padding: 8px 18px 16px; }
+}
+</style>
+
+        
+            <!-- 文章导航按钮 -->
+<mdui-tooltip content="文章导航">
+  <mdui-button-icon id="toc-toggle" class="toc-toggle-icon">
+    <mdui-icon name="menu_book"></mdui-icon>
+  </mdui-button-icon>
+</mdui-tooltip>
+
+<!-- 文章导航弹窗 -->
+<mdui-dialog id="toc-dialog" close-on-esc close-on-overlay-click class="toc-dialog">
+  <!-- 顶部：文章信息 chip（整合自文章页头部） -->
+  <div class="toc-meta-section" id="toc-meta-section">
+    <div class="toc-meta-title">1.1消息与信息技术</div>
+    <div class="toc-meta-chips">
+      <mdui-chip class="toc-meta-chip toc-chip-date" variant="filled">
+        <mdui-icon name="calendar_today" slot="icon"></mdui-icon>
+        2026-10-03
+      </mdui-chip>
+      
+      <mdui-chip class="toc-meta-chip toc-chip-cat" variant="filled">
+        <mdui-icon name="folder" slot="icon"></mdui-icon>
+        专本备考
+      </mdui-chip>
+      
+      
+      <mdui-chip class="toc-meta-chip toc-chip-read" variant="filled">
+        <mdui-icon name="schedule" slot="icon"></mdui-icon>
+        4 分钟阅读
+      </mdui-chip>
+      <mdui-chip class="toc-meta-chip toc-chip-words" variant="filled">
+        <mdui-icon name="text_snippet" slot="icon"></mdui-icon>
+        1097 字
+      </mdui-chip>
+    </div>
+    
+    <div class="toc-meta-tags">
+      
+        <mdui-chip class="toc-tag-chip" variant="filled" href="/bolg/tags/%E6%9C%AA%E5%88%86%E7%B1%BB/">
+          <mdui-icon name="sell" slot="icon"></mdui-icon>
+          未分类
+        </mdui-chip>
+      
+    </div>
+    
+  </div>
+
+  <mdui-divider class="toc-meta-divider"></mdui-divider>
+
+  <!-- 中部：目录列表 -->
+  <div class="toc-content">
+    <div class="toc-content-label">目录</div>
+    <div id="toc-container" class="toc-container">
+      <div class="toc-placeholder">
+        <mdui-icon name="menu_book"></mdui-icon>
+        <div class="toc-placeholder-text">正在解析标题…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toc-footer">
+    <span class="toc-count" id="toc-count"></span>
+    <mdui-button id="toc-close-btn" variant="tonal">关闭</mdui-button>
+  </div>
+</mdui-dialog>
+
+<style>
+.toc-dialog::part(overlay) {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(0, 0, 0, 0.36);
+}
+
+.toc-dialog {
+    --mdui-dialog-width: 480px;
+    --mdui-dialog-height: 78vh;
+    --mdui-dialog-max-height: 82vh;
+}
+
+.toc-dialog::part(panel) {
+    animation: tocPanelIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tocPanelIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ===== 顶部信息区 ===== */
+.toc-meta-section {
+    padding: 20px 24px 12px;
+}
+
+.toc-meta-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: rgb(var(--mdui-color-on-surface));
+    margin-bottom: 12px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.toc-meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.toc-meta-chip {
+    --mdui-chip-height: 28px;
+    font-size: 0.76rem;
+    font-weight: 500;
+}
+
+.toc-meta-chip mdui-icon {
+    font-size: 1rem;
+}
+
+.toc-chip-date {
+    background: rgb(var(--mdui-color-primary-container)) !important;
+    color: rgb(var(--mdui-color-on-primary-container)) !important;
+}
+
+.toc-chip-cat {
+    background: rgb(var(--mdui-color-secondary-container)) !important;
+    color: rgb(var(--mdui-color-on-secondary-container)) !important;
+}
+
+.toc-chip-read,
+.toc-chip-words {
+    background: rgb(var(--mdui-color-tertiary-container)) !important;
+    color: rgb(var(--mdui-color-on-tertiary-container)) !important;
+}
+
+.toc-meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 4px;
+}
+
+.toc-tag-chip {
+    --mdui-chip-height: 26px;
+    font-size: 0.74rem;
+    background: rgb(var(--mdui-color-surface-container-high)) !important;
+    color: rgb(var(--mdui-color-on-surface-variant)) !important;
+    text-decoration: none;
+}
+
+.toc-meta-divider {
+    margin: 0 24px;
+}
+
+/* ===== 目录内容区 ===== */
+.toc-content {
+    padding: 12px 24px 0;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toc-content-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.toc-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--mdui-color-outline-variant)) transparent;
+}
+
+.toc-container::-webkit-scrollbar { width: 5px; }
+.toc-container::-webkit-scrollbar-track { background: transparent; }
+.toc-container::-webkit-scrollbar-thumb {
+    background: rgb(var(--mdui-color-outline-variant) / 0.5);
+    border-radius: 999px;
+}
+.toc-container::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--mdui-color-outline));
+}
+
+.toc-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.toc-placeholder mdui-icon {
+    font-size: 40px;
+    opacity: 0.4;
+    color: rgb(var(--mdui-color-primary));
+}
+
+.toc-placeholder-text {
+    font-size: 0.9rem;
+}
+
+/* ===== 目录树 ===== */
+.toc-tree {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.toc-tree ul {
+    list-style: none;
+    padding-left: 16px;
+    margin: 2px 0;
+    border-left: 1.5px solid rgba(var(--mdui-color-outline-variant), 0.4);
+}
+
+.toc-node {
+    margin: 2px 0;
+}
+
+.toc-link {
+    display: block;
+    padding: 7px 10px;
+    color: rgb(var(--mdui-color-on-surface));
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    cursor: pointer;
+    border: 1px solid transparent;
+    opacity: 0;
+    transform: translateX(-6px);
+    animation: tocLinkIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes tocLinkIn {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.toc-link:hover {
+    background: rgb(var(--mdui-color-surface-container-high));
+    transform: translateX(2px);
+}
+
+.toc-link.active {
+    background: rgb(var(--mdui-color-primary-container));
+    color: rgb(var(--mdui-color-on-primary-container));
+    font-weight: 500;
+    border-color: rgba(var(--mdui-color-primary), 0.2);
+}
+
+/* 按级别区分 */
+.toc-level-1 > .toc-link { font-weight: 600; font-size: 0.95rem; }
+.toc-level-2 > .toc-link { font-weight: 500; font-size: 0.9rem; }
+.toc-level-3 > .toc-link { font-size: 0.86rem; opacity: 0.92; }
+.toc-level-4 > .toc-link,
+.toc-level-5 > .toc-link,
+.toc-level-6 > .toc-link { font-size: 0.82rem; opacity: 0.82; padding-top: 5px; padding-bottom: 5px; }
+
+/* ===== 底部 ===== */
+.toc-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    border-top: 1px solid rgba(var(--mdui-color-outline-variant), 0.5);
+}
+
+.toc-count {
+    font-size: 0.82rem;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    font-weight: 500;
+}
+
+.toc-toggle-icon {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toc-toggle-icon:hover {
+    color: rgb(var(--mdui-color-primary));
+    transform: rotate(-12deg) scale(1.1);
+}
+
+@media (max-width: 600px) {
+    .toc-dialog { --mdui-dialog-width: 94vw; --mdui-dialog-height: 82vh; }
+    .toc-meta-section { padding: 16px 18px 10px; }
+    .toc-content { padding: 10px 18px 0; }
+    .toc-footer { padding: 12px 18px; }
+    .toc-meta-divider { margin: 0 18px; }
+}
+</style>
+
+<script>
+(function() {
+  'use strict';
+
+  const throttle = (fn, wait) => {
+    let last = 0;
+    return function() {
+      const now = Date.now();
+      if (now - last > wait) { last = now; fn.apply(this, arguments); }
+    };
+  };
+
+  let headerCounter = 0;
+  const slugify = (text, idx) => {
+    const clean = text.trim().replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-');
+    if (/^[A-Za-z0-9\-_]+$/.test(clean) && clean.length > 0) return clean.substring(0, 40);
+    return 'heading-' + idx + '-' + (headerCounter++);
+  };
+
+  class HexoTOC {
+    constructor() {
+      this.dialog = document.getElementById('toc-dialog');
+      this.container = document.getElementById('toc-container');
+      this.countEl = document.getElementById('toc-count');
+      this.headers = [];
+      this.scrollBound = false;
+      this.init();
+    }
+
+    init() {
+      const toggle = document.getElementById('toc-toggle');
+      const closeBtn = document.getElementById('toc-close-btn');
+
+      if (toggle) toggle.addEventListener('click', () => this.open());
+      if (closeBtn) closeBtn.addEventListener('click', () => this.close());
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.isOpen()) this.close();
+      });
+
+      // 页面加载后预生成目录
+      if (document.readyState !== 'loading') {
+        setTimeout(() => this.generate(), 50);
+      } else {
+        document.addEventListener('DOMContentLoaded', () => setTimeout(() => this.generate(), 50), { once: true });
+      }
+      window.addEventListener('load', () => setTimeout(() => this.generate(), 100), { once: true });
+    }
+
+    open() {
+      this.dialog.open = true;
+      this.generate();
+    }
+
+    close() {
+      this.dialog.open = false;
+    }
+
+    isOpen() {
+      return this.dialog && this.dialog.open;
+    }
+
+    // 查找文章内容容器
+    findContent() {
+      const selectors = ['.article-content', '.markdown-section', '.post-body', 'article', '#article-container', '.post-content'];
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (el) return el;
+      }
+      return null;
+    }
+
+    generate() {
+      const content = this.findContent();
+      if (!content) {
+        this.showPlaceholder('未找到文章内容');
+        return;
+      }
+
+      // 提取标题，排除代码块内的假标题
+      const allHeaders = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      const headers = Array.from(allHeaders).filter(h => {
+        if (h.closest('.mac-code-block, pre, .gutter, figure.highlight, .toc-placeholder')) return false;
+        return true;
+      });
+
+      if (headers.length === 0) {
+        this.showPlaceholder('当前文章无标题');
+        return;
+      }
+
+      this.headers = headers;
+
+      // 分配 ID
+      headers.forEach((h, i) => {
+        if (!h.id) h.id = slugify(h.textContent || 'heading-' + i, i);
+      });
+
+      // 构建嵌套树
+      this.container.innerHTML = this.buildTree(headers);
+
+      // 更新计数
+      this.countEl.textContent = '共 ' + headers.length + ' 个标题';
+
+      // 绑定事件
+      this.bindLinks();
+
+      // 滚动高亮（只绑定一次）
+      if (!this.scrollBound) {
+        window.addEventListener('scroll', throttle(() => this.highlight(), 100), { passive: true });
+        this.scrollBound = true;
+      }
+      setTimeout(() => this.highlight(), 0);
+    }
+
+    // 用栈构建嵌套 ul/li 目录树
+    buildTree(headers) {
+      const root = { level: 0, children: [] };
+      const stack = [root];
+
+      headers.forEach((h, i) => {
+        const level = parseInt(h.tagName.charAt(1), 10);
+        const node = { level, id: h.id, text: h.textContent.trim(), children: [], index: i };
+        while (stack.length > 1 && stack[stack.length - 1].level >= level) stack.pop();
+        stack[stack.length - 1].children.push(node);
+        stack.push(node);
+      });
+
+      const render = (nodes) => {
+        if (!nodes || nodes.length === 0) return '';
+        let html = '<ul class="toc-tree">';
+        nodes.forEach(node => {
+          const hasChildren = node.children.length > 0;
+          html += '<li class="toc-node toc-level-' + node.level + '">' +
+            '<a href="#' + node.id + '" class="toc-link" data-target="' + node.id + '" style="animation-delay:' + Math.min(node.index * 20, 300) + 'ms">' +
+            this.escapeHtml(node.text) +
+            '</a>' +
+            render(node.children) +
+            '</li>';
+        });
+        html += '</ul>';
+        return html;
+      };
+
+      return render(root.children);
+    }
+
+    bindLinks() {
+      this.container.querySelectorAll('.toc-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const id = link.getAttribute('data-target');
+          const target = document.getElementById(id);
+          if (target) {
+            this.close();
+            setTimeout(() => {
+              const appbarH = document.querySelector('mdui-top-app-bar') ? document.querySelector('mdui-top-app-bar').offsetHeight : 64;
+              const y = target.getBoundingClientRect().top + window.pageYOffset - appbarH - 16;
+              window.scrollTo({ top: y, behavior: 'smooth' });
+            }, 120);
+          }
+        });
+      });
+    }
+
+    highlight() {
+      if (!this.headers || this.headers.length === 0) return;
+      const scrollY = window.scrollY || window.pageYOffset;
+      const appbarH = document.querySelector('mdui-top-app-bar') ? document.querySelector('mdui-top-app-bar').offsetHeight : 64;
+      const offset = appbarH + 20;
+
+      let currentId = this.headers[0].id;
+      for (let i = 0; i < this.headers.length; i++) {
+        const top = this.headers[i].getBoundingClientRect().top + scrollY - offset;
+        if (scrollY >= top) currentId = this.headers[i].id;
+        else break;
+      }
+
+      const oldActive = this.container.querySelector('.toc-link.active');
+      const newActive = this.container.querySelector('.toc-link[data-target="' + currentId + '"]');
+      if (oldActive && oldActive !== newActive) oldActive.classList.remove('active');
+      if (newActive && !newActive.classList.contains('active')) {
+        newActive.classList.add('active');
+        // 自动滚入目录视野
+        const cs = this.container;
+        const lr = newActive.getBoundingClientRect();
+        const cr = cs.getBoundingClientRect();
+        if (lr.top < cr.top + 10 || lr.bottom > cr.bottom - 10) {
+          cs.scrollTo({
+            top: newActive.offsetTop - cs.clientHeight / 2 + newActive.clientHeight / 2,
+            behavior: 'smooth'
+          });
+        }
+      }
+    }
+
+    showPlaceholder(msg) {
+      this.container.innerHTML =
+        '<div class="toc-placeholder">' +
+        '<mdui-icon name="menu_book"></mdui-icon>' +
+        '<div class="toc-placeholder-text">' + (msg || '暂无文章导航') + '</div>' +
+        '</div>';
+      if (this.countEl) this.countEl.textContent = '';
+    }
+
+    escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+  }
+
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { window.hexoTOC = new HexoTOC(); }, { once: true });
+  } else {
+    window.hexoTOC = new HexoTOC();
+  }
+})();
+</script>
+
+            <!-- 复制URL图标组件 -->
+<mdui-button-icon class="copy-url-btn">
+  <mdui-icon>link</mdui-icon>
+</mdui-button-icon>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const copyUrlBtn = document.querySelector('.copy-url-btn');
+  
+  copyUrlBtn.addEventListener('click', async function() {
+    try {
+      const currentUrl = window.location.href;
+      await navigator.clipboard.writeText(currentUrl);
+      
+      mdui.snackbar({
+        message: "链接复制成功！",
+        placement: 'bottom',
+        timeout: 2000
+      });
+    } catch (err) {
+      mdui.snackbar({
+        message: "复制失败，请手动复制",
+        placement: 'bottom',
+        timeout: 2000
+      });
+    }
+  });
+});
+</script>
+        
+    </div>
+
+    <!-- 移动端：折叠到一个「更多」按钮 -->
+    <div class="appbar-actions-mobile">
+        <mdui-dropdown id="appbar-mobile-menu">
+            <mdui-button-icon slot="trigger">
+                <mdui-icon name="more_vert"></mdui-icon>
+            </mdui-button-icon>
+            <mdui-menu>
+                <mdui-menu-item id="mobile-search-btn">
+                    <mdui-icon slot="icon" name="search"></mdui-icon>
+                    搜索
+                </mdui-menu-item>
+                <mdui-menu-item id="mobile-color-btn">
+                    <mdui-icon slot="icon" name="palette"></mdui-icon>
+                    动态配色
+                </mdui-menu-item>
+                <mdui-menu-item id="mobile-display-btn">
+                    <mdui-icon slot="icon" name="auto_mode"></mdui-icon>
+                    显示模式
+                </mdui-menu-item>
+                
+                <mdui-divider></mdui-divider>
+                <mdui-menu-item id="mobile-toc-btn">
+                    <mdui-icon slot="icon" name="menu_book"></mdui-icon>
+                    文章导航
+                </mdui-menu-item>
+                <mdui-menu-item id="mobile-share-btn">
+                    <mdui-icon slot="icon" name="link"></mdui-icon>
+                    复制链接
+                </mdui-menu-item>
+                
+            </mdui-menu>
+        </mdui-dropdown>
+    </div>
+</mdui-top-app-bar>
+
+<!-- 移动端显示模式选择弹窗（三选项：浅色/深色/跟随系统） -->
+<mdui-dialog id="mobile-display-dialog" class="mobile-display-dialog">
+    <div class="mdui-dialog-title">显示模式</div>
+    <mdui-list class="mobile-display-list">
+        <mdui-list-item id="mobile-mode-light" rounded>
+            <mdui-icon slot="icon" name="light_mode"></mdui-icon>
+            浅色
+        </mdui-list-item>
+        <mdui-list-item id="mobile-mode-dark" rounded>
+            <mdui-icon slot="icon" name="dark_mode"></mdui-icon>
+            深色
+        </mdui-list-item>
+        <mdui-list-item id="mobile-mode-auto" rounded>
+            <mdui-icon slot="icon" name="auto_mode"></mdui-icon>
+            跟随系统
+        </mdui-list-item>
+    </mdui-list>
+</mdui-dialog>
+
+<style>
+.appbar-actions-desktop {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.appbar-actions-mobile {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .appbar-actions-desktop {
+        display: none;
+    }
+    .appbar-actions-mobile {
+        display: inline-flex;
+        align-items: center;
+    }
+}
+
+.mobile-display-dialog {
+    --mdui-dialog-width: 320px;
+}
+
+.mobile-display-list {
+    padding: 8px 16px 16px;
+}
+
+.mobile-display-list mdui-list-item {
+    margin: 4px 0;
+    border-radius: 10px;
+}
+
+.mobile-display-list mdui-list-item:hover {
+    background-color: rgb(var(--mdui-color-surface-container-high));
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== 关键修复：将所有 mdui-dialog 移到 body 下 =====
+    // 这样 .appbar-actions-desktop 的 display:none 不会影响弹窗显示
+    var desktopActions = document.querySelector('.appbar-actions-desktop');
+    if (desktopActions) {
+        var dialogs = desktopActions.querySelectorAll('mdui-dialog');
+        dialogs.forEach(function(d) {
+            document.body.appendChild(d);
+        });
+    }
+
+    // ===== 移动端菜单项：直接操作弹窗 =====
+    var menuActions = {
+        'mobile-search-btn': 'search-dialog',
+        'mobile-color-btn': 'color-picker-dialog',
+        'mobile-toc-btn': 'toc-dialog'
+    };
+
+    Object.keys(menuActions).forEach(function(menuId) {
+        var item = document.getElementById(menuId);
+        var dialogId = menuActions[menuId];
+        if (!item) return;
+
+        item.addEventListener('click', function() {
+            // 关闭移动端下拉菜单
+            var dropdown = document.getElementById('appbar-mobile-menu');
+            if (dropdown) dropdown.open = false;
+
+            // 延迟打开弹窗（等下拉菜单关闭动画完成）
+            setTimeout(function() {
+                var dialog = document.getElementById(dialogId);
+                if (dialog) {
+                    dialog.open = true;
+                }
+                // TOC 特殊处理：触发目录生成
+                if (menuId === 'mobile-toc-btn' && window.hexoTOC) {
+                    window.hexoTOC.generate();
+                }
+            }, 150);
+        });
+    });
+
+    // ===== 复制链接（移动端） =====
+    var shareBtn = document.getElementById('mobile-share-btn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            var dropdown = document.getElementById('appbar-mobile-menu');
+            if (dropdown) dropdown.open = false;
+
+            setTimeout(function() {
+                // 直接复制 URL
+                var currentUrl = window.location.href;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(currentUrl).then(function() {
+                        mdui.snackbar({ message: '链接已复制', placement: 'bottom', timeout: 2000 });
+                    }).catch(function() {
+                        mdui.snackbar({ message: '复制失败', placement: 'bottom', timeout: 2000 });
+                    });
+                }
+            }, 150);
+        });
+    }
+
+    // ===== 显示模式：三选项弹窗 =====
+    var displayBtn = document.getElementById('mobile-display-btn');
+    var displayDialog = document.getElementById('mobile-display-dialog');
+
+    if (displayBtn && displayDialog) {
+        displayBtn.addEventListener('click', function() {
+            var dropdown = document.getElementById('appbar-mobile-menu');
+            if (dropdown) dropdown.open = false;
+
+            setTimeout(function() {
+                displayDialog.open = true;
+            }, 150);
+        });
+
+        // 三个模式选项
+        var modes = [
+            { id: 'mobile-mode-light', value: 'light' },
+            { id: 'mobile-mode-dark', value: 'dark' },
+            { id: 'mobile-mode-auto', value: 'auto' }
+        ];
+
+        modes.forEach(function(m) {
+            var el = document.getElementById(m.id);
+            if (el) {
+                el.addEventListener('click', function() {
+                    displayDialog.open = false;
+
+                    // 调用 appbar.js 中的 changeDisplayMode 逻辑
+                    var menu = document.querySelector('.appbar-display-mode');
+                    if (menu) {
+                        menu.value = m.value;
+                        // 触发 change 事件，appbar.js 会处理主题切换
+                        menu.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+        });
+    }
+});
+</script>
+
+    <mdui-navigation-drawer class="sidebar-content" close-on-overlay-click no-animation>
+    <!-- 用户信息卡片 -->
+    
+    <div class="sidebar-user-card">
+        
+            <mdui-avatar class="sidebar-user-avatar" src="/img/avatar.jpg"></mdui-avatar>
+        
+        
+            <div class="sidebar-user-name">喻清梅</div>
+        
+        
+            <div class="sidebar-user-slogen">small Steps build great journeys</div>
+        
+        </div>
+    
+    
+    <!-- 导航菜单 -->
+    <mdui-list class="nav-list">
+        
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/"
+                    rounded
+                    
+                    active
+                    
+                >
+                    <mdui-icon slot="icon" name="home"></mdui-icon>
+                    首页
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/diary/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="article"></mdui-icon>
+                    文章归档
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/categories/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="category"></mdui-icon>
+                    分类
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/tags/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="tag"></mdui-icon>
+                    标签
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/about/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="person"></mdui-icon>
+                    关于
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/links/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="link"></mdui-icon>
+                    友链
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/shuoshuo/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="chat"></mdui-icon>
+                    说说
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/message/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="message"></mdui-icon>
+                    留言
+                </mdui-list-item>
+            
+        
+    </mdui-list>
+
+
+
+</mdui-navigation-drawer>
+    <main class="main">
+        <div class="page-transition-container">
+            
+<script src="/bolg/js/fancybox.js"></script>
+
+
+<style>
+.post-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.post-card-wide {
+    border-radius: 20px;
+    background-color: rgb(var(--mdui-color-surface-container-low));
+    box-shadow: none;
+}
+
+.post-card-comment {
+    border-radius: 20px;
+    background-color: rgb(var(--mdui-color-surface-container-low));
+    box-shadow: none;
+    padding: 2.5rem;
+}
+
+.post-card-nav {
+    border-radius: 20px;
+    background-color: rgb(var(--mdui-color-surface-container-low));
+    box-shadow: none;
+    padding: 2.5rem;
+}
+
+.markdown-section img,
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.2em auto;
+    object-fit: contain;
+    box-sizing: border-box;
+    border-radius: 12px;
+}
+
+.caption {
+  color: #444;
+  display: block;
+  font-size: 0.9em;
+  margin-top: 0.1em;
+  position: relative;
+  text-align: center;
+}
+
+.article-content {
+    color: rgb(var(--mdui-color-on-surface));
+    line-height: 1.8;
+    font-family: var(--mdui-font-family);
+    width: 100%;
+    overflow-wrap: break-word;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+    color: rgb(var(--mdui-color-primary));
+    margin-top: 1.5em;
+    margin-bottom: 1em;
+}
+
+.article-content p {
+    margin-bottom: 1.2em;
+}
+
+.article-content a {
+    color: rgb(var(--mdui-color-primary));
+    text-decoration: none;
+    border-bottom: 1px dashed rgb(var(--mdui-color-primary));
+}
+
+.article-content a:hover {
+    opacity: 0.8;
+}
+
+.article-content code {
+    background-color: rgb(var(--mdui-color-surface-container-high));
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--mdui-font-family-mono);
+    word-break: break-word;
+}
+
+/* 代码块样式见文件末尾「macOS 风格代码块」部分（已重构） */
+
+.article-content pre {
+    background-color: rgb(var(--mdui-color-surface-container-high));
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.article-content ul,
+.article-content ol {
+    padding-left: 32px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.article-content li {
+    margin-bottom: 8px;
+    word-break: break-word;
+}
+
+/* ===== 阅读进度条（MD3 风格） ===== */
+.reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    z-index: 9999;
+    background: linear-gradient(90deg,
+        rgb(var(--mdui-color-primary)),
+        rgb(var(--mdui-color-tertiary)));
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 8px rgb(var(--mdui-color-primary) / 0.4);
+    transition: width 0.1s linear;
+    pointer-events: none;
+}
+
+/* ===== 文章头部元信息 ===== */
+.post-meta-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(var(--mdui-color-outline-variant), 0.6);
+}
+
+.post-meta-chip {
+    --mdui-chip-height: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.post-meta-chip mdui-icon {
+    font-size: 1.05rem;
+}
+
+.post-meta-chip.date-chip {
+    background: rgb(var(--mdui-color-primary-container)) !important;
+    color: rgb(var(--mdui-color-on-primary-container)) !important;
+}
+
+.post-meta-chip.cat-chip {
+    background: rgb(var(--mdui-color-secondary-container)) !important;
+    color: rgb(var(--mdui-color-on-secondary-container)) !important;
+}
+
+.post-meta-chip.read-chip {
+    background: rgb(var(--mdui-color-tertiary-container)) !important;
+    color: rgb(var(--mdui-color-on-tertiary-container)) !important;
+}
+
+.post-meta-tags {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.post-meta-tag-chip {
+    --mdui-chip-height: 28px;
+    font-size: 0.78rem;
+    background: rgb(var(--mdui-color-surface-container-high)) !important;
+    color: rgb(var(--mdui-color-on-surface-variant)) !important;
+}
+
+/* ===== 排版增强 ===== */
+
+/* 标题：左侧主色装饰条 */
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4 {
+    position: relative;
+    padding-left: 14px;
+    line-height: 1.4;
+}
+
+.article-content h1::before,
+.article-content h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.15em;
+    bottom: 0.15em;
+    width: 4px;
+    border-radius: 2px;
+    background: linear-gradient(180deg,
+        rgb(var(--mdui-color-primary)),
+        rgb(var(--mdui-color-tertiary)));
+}
+
+.article-content h3::before,
+.article-content h4::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    bottom: 0.2em;
+    width: 3px;
+    border-radius: 2px;
+    background: rgb(var(--mdui-color-primary) / 0.5);
+}
+
+/* 行内代码：主色调淡背景 */
+.article-content code {
+    background-color: rgb(var(--mdui-color-primary-container) / 0.45);
+    color: rgb(var(--mdui-color-on-primary-container));
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-family: var(--mdui-font-family-mono);
+    word-break: break-word;
+    font-size: 0.875em;
+}
+
+/* 引用块：圆角 + 主色淡底 + 图标感 */
+.article-content blockquote {
+    position: relative;
+    border-left: 4px solid rgb(var(--mdui-color-primary));
+    border-radius: 12px;
+    padding: 14px 18px 14px 22px;
+    margin: 18px 0;
+    background-color: rgb(var(--mdui-color-primary-container) / 0.35);
+    color: rgb(var(--mdui-color-on-surface));
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.article-content blockquote p {
+    margin-bottom: 0;
+}
+
+/* 分隔线 */
+.article-content hr {
+    border: none;
+    height: 1px;
+    margin: 2em 0;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(var(--mdui-color-outline), 0.4),
+        transparent);
+}
+
+/* 表格美化 */
+.article-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    display: block;
+    overflow-x: auto;
+}
+
+.article-content thead {
+    background-color: rgb(var(--mdui-color-primary-container));
+    color: rgb(var(--mdui-color-on-primary-container));
+}
+
+.article-content th,
+.article-content td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid rgba(var(--mdui-color-outline-variant), 0.6);
+}
+
+.article-content tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.article-content tbody tr:nth-child(even) {
+    background-color: rgb(var(--mdui-color-surface-container) / 0.5);
+}
+
+.article-content tbody tr:hover {
+    background-color: rgb(var(--mdui-color-surface-container-high));
+}
+
+.article-content tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 图片圆角 + 阴影 */
+.article-content img {
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.article-content img:hover {
+    transform: scale(1.01);
+}
+
+/* 链接：下划线动画 */
+.article-content a {
+    color: rgb(var(--mdui-color-primary));
+    text-decoration: none;
+    border-bottom: 1px solid rgba(var(--mdui-color-primary), 0.4);
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.article-content a:hover {
+    color: rgb(var(--mdui-color-tertiary));
+    border-bottom-color: rgb(var(--mdui-color-tertiary));
+}
+
+.post-navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 1rem 0;
+}
+
+.nav-button {
+    flex: 1;
+    text-align: center;
+    padding: 16px;
+    border-radius: 12px;
+    background-color: rgb(var(--mdui-color-surface-container));
+    color: rgb(var(--mdui-color-on-surface));
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+.nav-button:hover {
+    background-color: rgb(var(--mdui-color-surface-container-high));
+    transform: translateY(-2px);
+}
+
+.nav-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.nav-button.disabled:hover {
+    background-color: rgb(var(--mdui-color-surface-container));
+    transform: none;
+}
+
+.nav-label {
+    font-size: 0.875rem;
+    color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.nav-title {
+    font-weight: 500;
+}
+
+/* 平板设备 */
+@media (max-width: 1024px) {
+    .post-container {
+        padding: 2rem 24px;
+        gap: 20px;
+    }
+    
+    .post-card-wide,
+    .post-card-comment,
+    .post-card-nav {
+        padding: 2rem;
+    }
+}
+
+/* 手机设备 */
+@media (max-width: 768px) {
+    .post-container {
+        padding: 24px 16px;
+        gap: 16px;
+    }
+    
+    .post-card-wide {
+        padding: 1.5rem;
+    }
+    
+    .post-card-comment,
+    .post-card-nav {
+        padding: 1.5rem;
+    }
+    
+    .post-navigation {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* 移动端代码块 */
+    .mac-code-block {
+        margin: 1em 0;
+        border-radius: 8px;
+    }
+    
+    .mac-code-header {
+        padding: 8px 12px;
+    }
+    
+    .article-content .mac-code-block .gutter {
+        padding: 12px 8px 12px 12px;
+    }
+    
+    .article-content .mac-code-block .code,
+    .article-content .mac-code-block > .mac-code-body > pre {
+        padding: 12px;
+    }
+    
+    .article-content .mac-code-block .gutter pre,
+    .article-content .mac-code-block .code pre,
+    .article-content .mac-code-block > .mac-code-body > pre {
+        font-size: 0.8125rem;
+    }
+    
+    .article-content .mac-code-block pre::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .article-content {
+        font-size: 0.9375rem;
+    }
+}
+
+/* 小屏手机 */
+@media (max-width: 480px) {
+    .post-container {
+        padding: 20px 12px;
+        gap: 12px;
+    }
+    
+    .post-card-wide,
+    .post-card-comment,
+    .post-card-nav {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+    
+    .article-content .mac-code-block .gutter {
+        padding: 10px 8px 10px 10px;
+    }
+    
+    .article-content .mac-code-block .code,
+    .article-content .mac-code-block > .mac-code-body > pre {
+        padding: 10px;
+    }
+    
+    .article-content .mac-code-block .gutter pre,
+    .article-content .mac-code-block .code pre,
+    .article-content .mac-code-block > .mac-code-body > pre {
+        font-size: 0.75rem;
+    }
+    
+    .article-content ul,
+    .article-content ol {
+        padding-left: 24px;
+    }
+    
+    .mac-code-header {
+        padding: 6px 10px;
+    }
+    
+    .mac-code-dot {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .mac-code-title {
+        font-size: 0.72rem;
+    }
+}
+
+/* =====================================================
+   macOS 风格代码块（重构版）
+   支持 Hexo highlight.js 输出的 figure.highlight 结构
+   ===================================================== */
+.mac-code-block {
+    margin: 1.6em 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgb(var(--mdui-color-surface-container-high));
+    border: 1px solid rgba(var(--mdui-color-outline), 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    position: relative;
+}
+
+.mac-code-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgb(var(--mdui-color-surface-container-highest));
+    border-bottom: 1px solid rgba(var(--mdui-color-outline-variant), 0.5);
+    position: relative;
+}
+
+/* 三个交通灯圆点 */
+.mac-code-dots {
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.mac-code-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+}
+
+.mac-code-dot.red { background: #ff5f57; }
+.mac-code-dot.yellow { background: #febc2e; }
+.mac-code-dot.green { background: #28c840; }
+
+/* 居中语言标题 */
+.mac-code-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    font-family: var(--mdui-font-family);
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 右侧操作按钮 */
+.mac-code-actions {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.mac-code-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    padding: 0;
+}
+
+.mac-code-btn:hover {
+    background: rgb(var(--mdui-color-surface-container));
+    color: rgb(var(--mdui-color-primary));
+}
+
+.mac-code-btn.copied {
+    color: rgb(var(--mdui-color-success));
+}
+
+.mac-code-btn mdui-icon {
+    font-size: 18px;
+}
+
+/* 代码主体区 */
+.mac-code-body {
+    overflow: hidden;
+}
+
+/* 重置 article-content 通用表格样式对代码表格的干扰 */
+.article-content .mac-code-block figure {
+    margin: 0;
+}
+
+.article-content .mac-code-block table {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.article-content .mac-code-block table thead,
+.article-content .mac-code-block table th,
+.article-content .mac-code-block table td {
+    background: transparent;
+    color: inherit;
+    border-bottom: none;
+    padding: 0;
+}
+
+.article-content .mac-code-block tbody tr,
+.article-content .mac-code-block tbody tr:nth-child(even),
+.article-content .mac-code-block tbody tr:hover {
+    background: transparent;
+}
+
+/* 行号列 */
+.article-content .mac-code-block .gutter {
+    background: rgb(var(--mdui-color-surface-container));
+    border-right: 1px solid rgba(var(--mdui-color-outline-variant), 0.4);
+    padding: 14px 8px 14px 14px;
+    text-align: right;
+    user-select: none;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.article-content .mac-code-block .gutter pre {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    margin: 0;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    opacity: 0.6;
+    font-family: var(--mdui-font-family-mono);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+/* 代码列 */
+.article-content .mac-code-block .code {
+    padding: 14px 16px;
+    vertical-align: top;
+}
+
+.article-content .mac-code-block .code pre {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    margin: 0;
+    overflow-x: auto;
+    font-family: var(--mdui-font-family-mono);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: rgb(var(--mdui-color-on-surface));
+}
+
+/* 裸 pre（未走 highlight.js 的代码）回退 */
+.article-content .mac-code-block > .mac-code-body > pre {
+    margin: 0;
+    padding: 14px 16px;
+    background: transparent !important;
+    border-radius: 0 !important;
+    overflow-x: auto;
+    font-family: var(--mdui-font-family-mono);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: rgb(var(--mdui-color-on-surface));
+}
+
+/* 横向滚动条 */
+.article-content .mac-code-block pre {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--mdui-color-outline-variant)) transparent;
+}
+
+.article-content .mac-code-block pre::-webkit-scrollbar {
+    height: 8px;
+}
+
+.article-content .mac-code-block pre::-webkit-scrollbar-thumb {
+    background: rgb(var(--mdui-color-outline-variant));
+    border-radius: 4px;
+}
+
+.article-content .mac-code-block pre::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--mdui-color-outline));
+}
+
+/* Hexo highlight 行标记 */
+.article-content .mac-code-block .marked-line {
+    background: rgb(var(--mdui-color-primary) / 0.08);
+    display: block;
+    margin: 0 -16px;
+    padding: 0 16px;
+}
+
+/* 折叠状态 */
+.mac-code-block.is-collapsed .mac-code-body {
+    display: none;
+}
+
+/* 代码块内链接不上色 */
+.article-content .mac-code-block a {
+    border-bottom: none;
+}
+
+/* =====================================================
+   Markdown 格式补全
+   ===================================================== */
+
+/* h5 / h6 */
+.article-content h5,
+.article-content h6 {
+    color: rgb(var(--mdui-color-primary));
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    font-weight: 500;
+}
+
+.article-content h5 { font-size: 1.05rem; }
+.article-content h6 { font-size: 0.95rem; opacity: 0.85; }
+
+/* 加粗 / 斜体 / 删除线 */
+.article-content strong {
+    font-weight: 600;
+    color: rgb(var(--mdui-color-on-surface));
+}
+
+.article-content em {
+    font-style: italic;
+}
+
+.article-content del {
+    opacity: 0.6;
+}
+
+/* 键盘按键 */
+.article-content kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    font-family: var(--mdui-font-family-mono);
+    font-size: 0.8em;
+    line-height: 1.4;
+    color: rgb(var(--mdui-color-on-surface));
+    background: rgb(var(--mdui-color-surface-container-highest));
+    border: 1px solid rgba(var(--mdui-color-outline), 0.4);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+    vertical-align: middle;
+    margin: 0 2px;
+}
+
+/* 高亮标记 */
+.article-content mark {
+    background: rgb(var(--mdui-color-tertiary-container));
+    color: rgb(var(--mdui-color-on-tertiary-container));
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+/* 上下标 */
+.article-content sup,
+.article-content sub {
+    font-size: 0.75em;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+.article-content sup { top: -0.5em; }
+.article-content sub { bottom: -0.25em; }
+
+/* 任务列表（GFM task list） */
+.article-content ul.contains-task-list,
+.article-content li.task-list-item {
+    list-style: none;
+}
+
+.article-content li.task-list-item {
+    padding-left: 0;
+    margin-left: -18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.article-content input[type="checkbox"].task-list-item-checkbox {
+    margin: 0.35em 0 0 0;
+    flex-shrink: 0;
+    accent-color: rgb(var(--mdui-color-primary));
+    width: 16px;
+    height: 16px;
+    cursor: default;
+}
+
+/* 嵌套列表缩进 */
+.article-content ul ul,
+.article-content ol ol,
+.article-content ul ol,
+.article-content ol ul {
+    margin: 6px 0 0 0;
+}
+
+/* 定义列表 */
+.article-content dl {
+    margin: 1em 0;
+    padding: 12px 18px;
+    background: rgb(var(--mdui-color-surface-container) / 0.5);
+    border-radius: 12px;
+}
+
+.article-content dt {
+    font-weight: 600;
+    color: rgb(var(--mdui-color-primary));
+    margin-top: 10px;
+}
+
+.article-content dt:first-child {
+    margin-top: 0;
+}
+
+.article-content dd {
+    margin: 4px 0 0 0;
+    padding-left: 16px;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    line-height: 1.7;
+}
+
+/* 引用块内的列表 */
+.article-content blockquote ul,
+.article-content blockquote ol {
+    margin: 8px 0 0 0;
+}
+
+/* 图片标题 */
+.article-content .caption {
+    color: rgb(var(--mdui-color-on-surface-variant));
+    display: block;
+    font-size: 0.85em;
+    margin-top: 0.4em;
+    text-align: center;
+    opacity: 0.8;
+}
+
+/* 脚注 */
+.article-content .footnotes {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px solid rgba(var(--mdui-color-outline-variant), 0.6);
+    font-size: 0.875em;
+    color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.article-content .footnote-ref a,
+.article-content .footnote a {
+    border-bottom: none;
+}
+</style>
+
+
+
+<!-- 阅读进度条 -->
+<div class="reading-progress-bar" id="reading-progress-bar"></div>
+
+<mdui-layout-main>
+    <link rel="stylesheet" href="/fonts/banner/banner.css">
+
+<div class="banner-container">
+    <mdui-card class="banner-title">
+        <div class="banner-title-text1">1.1消息与信息技术</div>
+        <div class="banner-title-text2"></div>
+
+        
+            <mdui-chip variant="filled">
+                <mdui-icon name="calendar_today" slot="icon"></mdui-icon>
+                2026-10-03
+            </mdui-chip>
+
+            
+                <mdui-chip variant="filled">
+                    <mdui-icon name="folder" slot="icon"></mdui-icon>
+                    专本备考
+                </mdui-chip>
+            
+
+            
+                <mdui-chip variant="filled">
+                    <mdui-icon name="tag" slot="icon"></mdui-icon>
+                    未分类
+                </mdui-chip>
+            
+        
+    </mdui-card>
+
+    <mdui-card class="banner-image">
+        <div style="margin: 16px; text-align: center;">
+            <p class="banner-hitokoto" variant="filled">
+                <mdui-icon slot="icon">format_quote</mdui-icon>
+                <span id="hitokoto_text" style="color: var(--mdui-color-on-surface); text-decoration: none; font-style: italic;">
+                    <span id="hitokoto_inner">获取中...</span><span id="hitokoto_cursor">|</span>
+                </span>
+            </p>
+        </div>
+
+        <script>
+        (function(){
+            function typeText(el, text, speed, cursorEl) {
+                if (!el) return;
+                el.textContent = '';
+                let i = 0;
+                if (cursorEl) cursorEl.style.opacity = '1';
+                function step(){
+                    if (i < text.length) {
+                        el.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(step, speed);
+                    } else {
+                        if (cursorEl) cursorEl.style.opacity = '0';
+                    }
+                }
+                step();
+            }
+
+            function fetchHitokoto(){
+                fetch('https://v1.hitokoto.cn')
+                    .then(function(r){ return r.json(); })
+                    .then(function(data){
+                        var inner = document.getElementById('hitokoto_inner');
+                        var cursor = document.getElementById('hitokoto_cursor');
+                        if (!inner) return;
+                        if (data && data.hitokoto) {
+                            var text = data.hitokoto + (data.from ? ' — ' + data.from : '');
+                            typeText(inner, text, 40, cursor);
+                        }
+                    })
+                    .catch(function(){ /* ignore errors */ });
+            }
+
+            // 添加简单的光标闪烁样式
+            var _s = document.createElement('style');
+            _s.textContent = '#hitokoto_cursor{display:inline-block;margin-left:6px;opacity:1;transition:opacity .2s}@keyframes _hk{0%{opacity:1}50%{opacity:0}100%{opacity:1}} #hitokoto_cursor{animation:_hk 1s steps(1) infinite}';
+            document.head.appendChild(_s);
+
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                fetchHitokoto();
+            } else {
+                document.addEventListener('DOMContentLoaded', fetchHitokoto);
+            }
+        })();
+        </script>
+    </mdui-card>
+</div>
+
+    <div class="post-container">
+        <!-- 内容卡片 -->
+        <mdui-card variant="filled" class="post-card-wide">
+            <mdui-card-content>
+                <div class="article-content">
+                    <h3 id="一、信息"><a href="#一、信息" class="headerlink" title="一、信息"></a>一、信息</h3><h6 id="1、信息的定义"><a href="#1、信息的定义" class="headerlink" title="1、信息的定义"></a>1、信息的定义</h6><p>   信息是指事物运动的状态及状态变化的方式，是认识主题感知或所表述的事物运动的运动及其变化方式的形式、内容和效用。</p>
+<h6 id="2、客观世界的三大构成要素"><a href="#2、客观世界的三大构成要素" class="headerlink" title="2、客观世界的三大构成要素"></a>2、客观世界的三大构成要素</h6><p>&#x3D;&#x3D;信息&#x3D;&#x3D;  &#x3D;&#x3D;物质&#x3D;&#x3D; &#x3D;&#x3D;能量&#x3D;&#x3D;</p>
+<h6 id="3、信息的特征"><a href="#3、信息的特征" class="headerlink" title="3、信息的特征"></a>3、信息的特征</h6><p> &#x3D;&#x3D;普遍性&#x3D;&#x3D;  &#x3D;&#x3D;动态性&#x3D;&#x3D;  &#x3D;&#x3D;时效性&#x3D;&#x3D;  &#x3D;&#x3D;多样性&#x3D;&#x3D;  &#x3D;&#x3D;可传递性&#x3D;&#x3D;  &#x3D;&#x3D;可共享性&#x3D;&#x3D;  &#x3D;&#x3D;快速增长性&#x3D;&#x3D;</p>
+<h6 id="4、信息VS数据"><a href="#4、信息VS数据" class="headerlink" title="4、信息VS数据"></a>4、信息VS数据</h6><p> 1、数据可以分为 <strong>数值型数据</strong> 和 <strong>非数值型数据</strong> 。<br> 2、数据是 <strong>原始未加工</strong> 的，而信息是对数据进行 <strong>处理后得到对人有用的</strong> 结果。<br> 3、**数据是信息的符号化表示，数据是信息的&#x3D;&#x3D;载体&#x3D;&#x3D;</p>
+<h3 id="二、信息处理与信息技术"><a href="#二、信息处理与信息技术" class="headerlink" title="二、信息处理与信息技术"></a>二、信息处理与信息技术</h3><p>1、<strong>信息处理</strong> ：信息&#x3D;&#x3D;收集&#x3D;&#x3D; 、信息&#x3D;&#x3D;加工&#x3D;&#x3D;、信息&#x3D;&#x3D;存储&#x3D;&#x3D;、信息&#x3D;&#x3D;传递&#x3D;&#x3D;、信息&#x3D;&#x3D;施用&#x3D;&#x3D;。<br>2、<strong>信息处理</strong> ：用来&#x3D;&#x3D;<strong>扩展</strong>&#x3D;&#x3D;人的信息器官功能，&#x3D;&#x3D;<strong>协助</strong>&#x3D;&#x3D;人们进行信息处理的一类技术<br>	  （1）、&#x3D;&#x3D;<em><strong>扩展感觉器官功能的感测（获取）技术与识别技术</strong></em>&#x3D;&#x3D;<br>	  （2）、&#x3D;&#x3D;<em><strong>扩展神经系统功能的通信技术</strong></em>&#x3D;&#x3D;<br>	  （3）、&#x3D;&#x3D;<em><strong>扩展大脑功能的计算（处理）与储存技术</strong></em>&#x3D;&#x3D;<br>	  （4）、&#x3D;&#x3D;<em><strong>扩展效应器官功能的控制与显示技术</strong></em>&#x3D;&#x3D;</p>
+<h3 id="三、现代信息技术"><a href="#三、现代信息技术" class="headerlink" title="三、现代信息技术"></a>三、现代信息技术</h3><h6 id="1、主要特征"><a href="#1、主要特征" class="headerlink" title="1、主要特征"></a>1、主要特征</h6><p>   (1)、  以<em><strong>数字技术（计算机）</strong></em> 为基础<br>   (2)、  以<em><strong>软件与通信技术</strong></em> 为核心<br>   (3)、  采用<em><strong>微光&#x2F;电子技术</strong></em> </p>
+<h6 id="2、涉及领域："><a href="#2、涉及领域：" class="headerlink" title="2、涉及领域："></a>2、涉及领域：</h6><p><em>通信</em> 、<em>广播</em> 、<em>计算机</em> 、<em>微电子</em> 、<em>遥感遥测</em> 、<em>自动控制</em> 、<em>机器人</em> 等</p>
+<h6 id="3、核心技术-："><a href="#3、核心技术-：" class="headerlink" title="3、核心技术 ："></a>3、核心技术 ：</h6><p><strong>微电子</strong>技术、<strong>通信</strong>技术、<strong>计算机</strong>技术。</p>
+
+                </div>
+            </mdui-card-content>
+        </mdui-card>
+
+        <!-- 上一篇/下一篇导航 -->
+        <mdui-card variant="filled" class="post-card-nav">
+            <mdui-card-content>
+                <div class="post-navigation">
+                    
+                        <a href="/bolg/2026/10/03/1.2%E6%95%B0%E5%AD%97%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/" class="nav-button">
+                            <span class="nav-label">上一篇</span>
+                            <span class="nav-title">1.2数字技术基础</span>
+                        </a>
+                    
+                    
+                    
+                        <a href="/bolg/2026/10/03/%E4%BD%BF%E7%94%A8-Hexo-%E6%A1%86%E6%9E%B6%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/" class="nav-button">
+                            <span class="nav-label">下一篇</span>
+                            <span class="nav-title">安装 Hexo 框架</span>
+                        </a>
+                    
+                </div>
+            </mdui-card-content>
+        </mdui-card>
+
+        <!-- 评论卡片 -->
+        <mdui-card variant="filled" class="post-card-comment">
+            <mdui-card-content>
+                <mdui-typography variant="h5" style="margin-bottom: 1.5rem; text-align: center; color: rgb(var(--mdui-color-primary));">
+                    评论
+                </mdui-typography>
+                
+                    
+                        
+<div id="tcomment"></div>
+<script src="https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.min.js"></script>
+<script>
+twikoo.init({
+  envId: 'https://luhaorantxm0906.dpdns.org',
+  el: '#tcomment',
+  // region: 'ap-guangzhou', // 腾讯云环境时需要，Vercel 不需要
+  path: location.pathname,
+  lang: 'zh-CN'
+}).then(function () {
+  console.log('Twikoo 评论系统加载成功');
+}).catch(function (err) {
+  console.error('Twikoo 评论系统加载失败:', err);
+});
+</script>
+
+
+                    
+                
+            </mdui-card-content>
+        </mdui-card>
+    </div>
+</mdui-layout-main>
+
+<!-- macOS 风格代码块（外部脚本，defer 延迟加载） -->
+<script defer src="/js/post-codeblock.js"></script>
+
+<script>
+// 阅读进度条（使用 requestAnimationFrame 节流，性能友好）
+(function () {
+    var progressBar = document.getElementById('reading-progress-bar');
+    if (!progressBar) return;
+
+    var ticking = false;
+
+    function update() {
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var progress = docHeight > 0 ? (scrollTop / docHeight) : 0;
+        if (progress < 0) progress = 0;
+        if (progress > 1) progress = 1;
+
+        progressBar.style.width = (progress * 100) + '%';
+
+        ticking = false;
+    }
+
+    function onScroll() {
+        if (!ticking) {
+            window.requestAnimationFrame(update);
+            ticking = true;
+        }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
+})();
+</script>
+        </div>
+    </main>
+
+    <!-- 全局回到顶部 FAB -->
+    <mdui-fab class="back-to-top-fab" id="back-to-top-fab" variant="primary" size="small">
+        <mdui-icon slot="icon" name="arrow_upward"></mdui-icon>
+    </mdui-fab>
+
+    <br>
+<mdui-divider></mdui-divider>
+<mdui-footer class="site-footer">
+  <div class="footer-content">
+    
+    <!-- 主要信息区域 -->
+    <div class="footer-main">
+      <!-- 版权信息 -->
+      <div class="copyright">
+        <mdui-chip variant="filled" class="footer-chip">
+          <mdui-icon name="copyright" slot="icon"></mdui-icon>
+          &copy; 2026 
+          <a href="/bolg/" class="site-link">喻清洛的知识小屋</a>
+          
+            · 保留所有权利
+          
+        </mdui-chip>
+      </div>
+
+      <div class="theme">
+        <mdui-chip variant="filled" class="footer-chip">
+          <mdui-icon name="code" slot="icon"></mdui-icon>
+          <a target="_blank" rel="noopener" href="https://github.com/can1425/materialis" class="site-link">Materialis</a>
+        </mdui-chip>
+      </div>
+
+      <!-- 备案信息 -->
+      
+
+
+
+      <!-- 自定义徽章 -->
+      
+    </div>
+
+  </div>
+</mdui-footer>
+
+<style>
+/* 强制底部布局 */
+.site-footer {
+  background: var(--mdui-color-surface);
+  border-top: 1px solid var(--mdui-color-outline-variant);
+  margin-top: auto !important;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+/* 主要信息区域 */
+.footer-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Chip 通用样式 */
+.footer-chip {
+  --mdui-chip-height: 32px;
+  --mdui-chip-container-color: var(--mdui-color-surface-container);
+  --mdui-chip-outline-color: var(--mdui-color-outline-variant);
+  transition: all 0.3s ease;
+  font-family: var(--mdui-font-family);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.footer-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 版权信息 Chip */
+.copyright .footer-chip {
+  --mdui-chip-container-color: var(--mdui-color-primary-container);
+  --mdui-chip-label-text-color: var(--mdui-color-on-primary-container);
+}
+
+/* 备案信息 Chip */
+.beian-chip {
+  --mdui-chip-container-color: var(--mdui-color-secondary-container);
+  --mdui-chip-label-text-color: var(--mdui-color-on-secondary-container);
+}
+
+/* 主题信息 Chip */
+.theme-info .footer-chip {
+  --mdui-chip-outline-color: var(--mdui-color-primary);
+  --mdui-chip-label-text-color: var(--mdui-color-primary);
+}
+
+/* 链接样式 */
+.site-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.site-link:hover {
+  text-decoration: underline;
+}
+
+.tech-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.tech-link:hover {
+  text-decoration: underline;
+}
+
+/* 备案信息 */
+.beian-info {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 自定义徽章 */
+.custom-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.custom-badge {
+  cursor: pointer;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .footer-main {
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .custom-badges {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    padding: 1rem;
+  }
+  
+  .footer-main {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .custom-badges {
+    justify-content: center;
+  }
+  
+  .beian-info {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .footer-chip {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    padding: 0.75rem;
+  }
+  
+  .footer-chip {
+    --mdui-chip-height: 28px;
+    font-size: 0.875rem;
+  }
+  
+  .custom-badges,
+  .beian-info {
+    width: 100%;
+  }
+}
+</style>
+
+    
+<style>
+/* ===== 音乐球（mdui 风格 + Apple 毛玻璃） ===== */
+.music-widget {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9000;
+    font-family: var(--mdui-font-family);
+}
+
+/* 折叠态：旋转球 */
+.music-ball {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background: linear-gradient(135deg,
+        rgb(var(--mdui-color-primary)),
+        rgb(var(--mdui-color-tertiary)));
+    box-shadow: 0 4px 16px rgb(var(--mdui-color-primary) / 0.35),
+                0 1px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+                box-shadow 0.25s ease;
+    position: relative;
+}
+
+.music-ball:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 22px rgb(var(--mdui-color-primary) / 0.45);
+}
+
+.music-ball:active {
+    transform: scale(0.95);
+}
+
+.music-ball-cover {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.music-ball-cover mdui-icon {
+    color: #fff;
+    font-size: 28px;
+}
+
+.music-ball.playing .music-ball-cover {
+    animation: music-spin 12s linear infinite;
+}
+
+/* 播放时小球呼吸光晕 */
+.music-ball.playing::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgb(var(--mdui-color-primary) / 0.4);
+    animation: music-pulse 2s ease-out infinite;
+}
+
+@keyframes music-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes music-pulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* 展开态：播放面板 */
+.music-panel {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 300px;
+    padding: 16px;
+    border-radius: 20px;
+    background: rgb(var(--mdui-color-surface-container) / 0.82);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(var(--mdui-color-outline-variant), 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px) scale(0.96);
+    transform-origin: bottom right;
+    transition: opacity 0.25s ease,
+                transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+                visibility 0.25s;
+}
+
+.music-widget.expanded .music-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.music-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.music-panel-cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgb(var(--mdui-color-primary-container));
+    color: rgb(var(--mdui-color-on-primary-container));
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.music-panel-cover mdui-icon {
+    font-size: 24px;
+}
+
+.music-panel-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.music-panel-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgb(var(--mdui-color-on-surface));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-panel-artist {
+    font-size: 0.78rem;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.music-close {
+    flex-shrink: 0;
+    --mdui-color-on-surface: var(--mdui-color-on-surface-variant);
+}
+
+.music-slider {
+    width: 100%;
+    margin: 6px 0 2px;
+}
+
+.music-time {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.music-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.music-play-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgb(var(--mdui-color-primary));
+    color: rgb(var(--mdui-color-on-primary));
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgb(var(--mdui-color-primary) / 0.4);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    margin: 0 4px;
+}
+
+.music-play-btn:hover {
+    background: rgb(var(--mdui-color-primary) / 0.88);
+}
+
+.music-play-btn:active {
+    transform: scale(0.92);
+}
+
+.music-play-btn mdui-icon {
+    font-size: 24px;
+}
+
+.music-prev-icon,
+.music-next-icon {
+    --mdui-color-on-surface: var(--mdui-color-on-surface-variant);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .music-widget {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .music-ball {
+        width: 50px;
+        height: 50px;
+    }
+
+    .music-ball-cover mdui-icon {
+        font-size: 24px;
+    }
+
+    .music-panel {
+        width: calc(100vw - 32px);
+        max-width: 300px;
+        bottom: 62px;
+    }
+}
+
+/* 尊重减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .music-ball.playing .music-ball-cover {
+        animation: none;
+    }
+    .music-ball.playing::after {
+        animation: none;
+        display: none;
+    }
+    .music-panel {
+        transition-duration: 0.01ms;
+    }
+}
+</style>
+
+<div class="music-widget" id="music-widget">
+    <!-- 折叠态：旋转唱片球 -->
+    <button class="music-ball" id="music-ball" aria-label="音乐播放器">
+        <span class="music-ball-cover" id="music-ball-cover">
+            <mdui-icon name="music_note"></mdui-icon>
+        </span>
+    </button>
+
+    <!-- 展开态：播放面板 -->
+    <div class="music-panel" id="music-panel">
+        <div class="music-panel-head">
+            <span class="music-panel-cover" id="music-panel-cover">
+                <mdui-icon name="music_note"></mdui-icon>
+            </span>
+            <div class="music-panel-info">
+                <div class="music-panel-title" id="music-panel-title">未在播放</div>
+                <div class="music-panel-artist" id="music-panel-artist">- -</div>
+            </div>
+            <mdui-button-icon id="music-close" class="music-close" aria-label="收起">
+                <mdui-icon name="close"></mdui-icon>
+            </mdui-button-icon>
+        </div>
+
+        <mdui-slider id="music-slider" class="music-slider" value="0" max="100"></mdui-slider>
+
+        <div class="music-time">
+            <span id="music-current">0:00</span>
+            <span id="music-duration">0:00</span>
+        </div>
+
+        <div class="music-controls">
+            <mdui-button-icon id="music-prev" aria-label="上一首">
+                <mdui-icon name="skip_previous" class="music-prev-icon"></mdui-icon>
+            </mdui-button-icon>
+            <button class="music-play-btn" id="music-play" aria-label="播放/暂停">
+                <mdui-icon name="play_arrow" id="music-play-icon"></mdui-icon>
+            </button>
+            <mdui-button-icon id="music-next" aria-label="下一首">
+                <mdui-icon name="skip_next" class="music-next-icon"></mdui-icon>
+            </mdui-button-icon>
+        </div>
+    </div>
+
+    <audio id="music-audio" preload="metadata"></audio>
+</div>
+
+<script>
+// 注入音乐配置（由主题 _config.yml 生成）
+window.MUSIC_CONFIG = {
+    api: "",
+    playlistId: "",
+    playlist: [{"url":"/audio/music.flac","name":"梦里梦外都是你","artist":"本地音频","cover":""}]
+};
+</script>
+<script defer src="/js/widgets/music.js"></script>
+
+
+</body>
+
+<script type="module" src="/js/loading.js"></script>
+<script defer src="/js/widgets/appbar.js"></script>
+<script defer src="/js/page-transition.js"></script>
+<script>
+// 全局回到顶部 FAB 逻辑
+(function () {
+    var fab = document.getElementById('back-to-top-fab');
+    if (!fab) return;
+    var ticking = false;
+    function update() {
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > 300) fab.classList.add('is-visible');
+        else fab.classList.remove('is-visible');
+        ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+        if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    fab.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    update();
+})();
+</script>
+<script>        
+
+console.log(`
+███╗   ███╗ █████╗ ████████╗███████╗██████╗ ██╗ █████╗ ██╗     ██╗███████╗
+████╗ ████║██╔══██╗╚══██╔══╝██╔════╝██╔══██╗██║██╔══██╗██║     ██║██╔════╝
+██╔████╔██║███████║   ██║   █████╗  ██████╔╝██║███████║██║     ██║███████╗
+██║╚██╔╝██║██╔══██║   ██║   ██╔══╝  ██╔══██╗██║██╔══██║██║     ██║╚════██║
+██║ ╚═╝ ██║██║  ██║   ██║   ███████╗██║  ██║██║██║  ██║███████╗██║███████║
+╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚══════╝
+`);
+</script>
+
+<!-- 引入自定义 CSS -->
+
+
+<!-- 自定义头部代码 -->
+
+<!-- 引入自定义 JS -->
+
+
+<!-- 自定义底部代码 -->
+
+
+<!-- 纪念日黑白效果 -->
+
+<script>
+(function() {
+    // 获取今天的日期（月-日格式）
+    const today = new Date();
+    const month = today.getMonth() + 1; // 月份从0开始，需要+1
+    const day = today.getDate();
+    const todayStr = month + '.' + day;
+    
+    // 获取配置的纪念日列表
+    const memorialDays = JSON.parse('[7.7,9.18,12.13]');
+    
+    // 检查今天是否为纪念日
+    if (memorialDays.includes(todayStr)) {
+        // 应用黑白效果
+        const style = document.createElement('style');
+        style.innerHTML = `
+            html {
+                filter: grayscale(100%);
+                -webkit-filter: grayscale(100%);
+                -moz-filter: grayscale(100%);
+                -ms-filter: grayscale(100%);
+                -o-filter: grayscale(100%);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+})();
+</script>
+
+</html>

@@ -1,0 +1,2349 @@
+<!DOCTYPE html>
+<html lang="zh-CN"">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 性能优化：预连接 CDN，减少 DNS/TLS 握手延迟 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://lib.baomitu.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.staticfile.org" crossorigin>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <link rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css">
+    <script defer src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script defer src="//lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+    
+        <link rel="stylesheet" href="/fonts/lxwk/lxwk.css">
+    
+
+    
+<link rel="stylesheet" href="/bolg/css/style.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/color.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/widgets/index/post-card.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/widgets/page-transition.css">
+
+    
+<link rel="stylesheet" href="/bolg/css/widgets/loading.css">
+
+
+    
+        <mdui-dialog id="interceptDialog" class="interceptor-dialog" close-on-overlay-click>
+  <div class="mdui-dialog-title">即将离开本站</div>
+  <div class="mdui-dialog-content">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <mdui-icon name="open_in_new" style="font-size: 48px; color: var(--mdui-color-primary);"></mdui-icon>
+    </div>
+    <p>您即将访问外部网站：</p>
+    <div class="link-info">
+      <strong id="interceptLinkText">链接文本</strong>
+      <br>
+      <small style="color: var(--mdui-color-on-surface-variant);" id="interceptDomain">域名</small>
+    </div>
+    <div class="mdui-typo-caption" style="margin-top: 16px; color: var(--mdui-color-on-surface-variant);">
+      <mdui-icon name="info" size="small"></mdui-icon>
+      请注意：外部网站的内容和安全性不在本站控制范围内
+    </div>
+  </div>
+  <div class="mdui-dialog-actions">
+    <mdui-button id="cancelBtn">取消</mdui-button>
+    <mdui-button variant="filled" id="continueBtn">继续访问</mdui-button>
+  </div>
+</mdui-dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // 获取对话框元素
+  const interceptDialog = document.querySelector('#interceptDialog');
+  const continueBtn = document.querySelector('#continueBtn');
+  const cancelBtn = document.querySelector('#cancelBtn');
+  
+  // 存储当前点击的链接
+  let currentLink = null;
+
+  // 图片文件后缀列表
+  const imageExtensions = [
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', 
+    '.svg', '.ico', '.tiff', '.tif', '.avif', '.heic'
+  ];
+
+  // 拦截所有外部链接的点击事件
+  document.addEventListener('click', function(e) {
+    let target = e.target;
+    
+    // 向上查找链接元素
+    while (target && target.tagName !== 'A') {
+      target = target.parentElement;
+    }
+    
+    if (target && target.tagName === 'A') {
+      const href = target.getAttribute('href');
+      
+      // 只拦截外部链接，但不拦截图片链接
+      if (href && isExternalLink(href) && !isImageLink(href)) {
+        e.preventDefault();
+        currentLink = href;
+        showInterceptionDialog(href, target.textContent || target.title || '未知网站');
+      }
+    }
+  });
+
+  // 判断是否为外部链接
+  function isExternalLink(href) {
+    return (
+      href.startsWith('http://') ||
+      href.startsWith('https://') ||
+      href.startsWith('//') ||
+      href.startsWith('mailto:') ||
+      href.startsWith('tel:')
+    );
+  }
+
+  // 判断是否为图片链接
+  function isImageLink(href) {
+    const lowerHref = href.toLowerCase();
+    return imageExtensions.some(ext => lowerHref.endsWith(ext));
+  }
+
+  // 显示拦截对话框
+  function showInterceptionDialog(url, linkText) {
+    const domain = new URL(url, window.location.origin).hostname;
+    
+    // 更新对话框内容
+    document.getElementById('interceptLinkText').textContent = linkText;
+    document.getElementById('interceptDomain').textContent = domain;
+    
+    // 打开对话框
+    interceptDialog.open = true;
+  }
+
+  // 继续访问按钮点击事件
+  continueBtn.addEventListener('click', function() {
+    if (currentLink) {
+      window.open(currentLink, '_blank', 'noopener,noreferrer');
+      interceptDialog.open = false;
+      currentLink = null;
+    }
+  });
+
+  // 取消按钮点击事件
+  cancelBtn.addEventListener('click', function() {
+    interceptDialog.open = false;
+    currentLink = null;
+  });
+
+  interceptDialog.addEventListener('close', function() {
+    currentLink = null;
+  });
+});
+</script>
+
+<style>
+/* 对话框内容样式 */
+.interceptor-dialog {
+  background-color: rgba(var(--mdui-color-surface), 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(var(--mdui-color-outline), 0.1) !important;
+}
+
+.interceptor-dialog .mdui-dialog-title {
+  font-weight: 600;
+  text-align: center;
+  padding: 24px 24px 0;
+  color: var(--mdui-color-on-surface);
+}
+
+.interceptor-dialog .mdui-dialog-content {
+  padding: 20px 24px;
+  color: var(--mdui-color-on-surface-variant);
+}
+
+.interceptor-dialog .link-info {
+  background: rgba(var(--mdui-color-primary), 0.08);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  text-align: center;
+  border: 1px solid rgba(var(--mdui-color-primary), 0.2);
+}
+
+.interceptor-dialog .mdui-dialog-actions {
+  padding: 8px 24px 24px;
+  justify-content: flex-end;
+  gap: 8px;
+}
+</style>
+    
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+<body>
+    <!-- MD3 加载动画遮罩：内联在 body 首部，确保首屏即时显示 -->
+    <div id="md3-loading-overlay" class="md3-loading-overlay" aria-hidden="true">
+        <div class="md3-loading-brand">喻清洛的知识小屋</div>
+        <div class="md3-loading-spinner" role="status" aria-label="Loading"></div>
+    </div>
+
+    <mdui-top-app-bar variant="center-aligned" scroll-behavior="elevate" class="top-app-bar">
+    <mdui-button-icon class="appbar-menu-button">
+        <mdui-icon name="menu"></mdui-icon>
+    </mdui-button-icon>
+    <mdui-top-app-bar-title onclick="window.location.href='/bolg/'" style="cursor: pointer;">
+        喻清洛的知识小屋
+    </mdui-top-app-bar-title>
+
+    <!-- 桌面端：所有按钮平铺显示 -->
+    <div class="appbar-actions-desktop">
+        <mdui-dropdown>
+            <div slot="trigger">
+                <mdui-tooltip content="显示模式">
+                    <mdui-button-icon>
+                        <mdui-icon name="auto_mode" class="appbar-display-mode-icon"></mdui-icon>
+                    </mdui-button-icon>
+                </mdui-tooltip>
+            </div>
+            <mdui-menu selects="single" value="auto" class="appbar-display-mode">
+                <mdui-menu-item value="light">亮色模式</mdui-menu-item>
+                <mdui-menu-item value="dark">暗色模式</mdui-menu-item>
+                <mdui-divider></mdui-divider>
+                <mdui-menu-item value="auto">跟随系统</mdui-menu-item>
+            </mdui-menu>
+        </mdui-dropdown>
+
+        <!-- 搜索按钮 -->
+<mdui-button-icon id="search-toggle">
+    <mdui-icon name="search"></mdui-icon>
+</mdui-button-icon>
+
+<!-- 搜索弹窗 -->
+<mdui-dialog id="search-dialog" close-on-esc close-on-overlay-click class="search-dialog">
+    <div class="search-header">
+        <mdui-text-field class="search-input" placeholder="搜索文章、标签、分类..." id="search-input">
+            <mdui-icon name="search" slot="icon"></mdui-icon>
+        </mdui-text-field>
+        <mdui-button-icon class="close-btn" id="search-close">
+            <mdui-icon name="close"></mdui-icon>
+        </mdui-button-icon>
+    </div>
+
+    <div class="search-content">
+        <div id="search-results" class="search-results">
+            <div class="search-placeholder">
+                <mdui-icon name="search"></mdui-icon>
+                <div>输入关键词开始搜索</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-footer">
+        <span class="result-count" id="result-count"></span>
+        <mdui-button id="search-close-btn">关闭</mdui-button>
+    </div>
+</mdui-dialog>
+
+<style>
+.search-dialog::part(overlay) {
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%); /* Safari 支持 */
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.search-dialog {
+    --mdui-dialog-width: 600px;
+    --mdui-dialog-height: 70vh;
+}
+
+.search-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px 0;
+    margin-bottom: 16px;
+}
+
+.search-input {
+    flex: 1;
+}
+
+.close-btn {
+    margin-left: auto;
+}
+
+.search-content {
+    padding: 0 24px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.search-results {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+    background: var(--mdui-color-surface-container);
+}
+
+.search-results::-webkit-scrollbar-thumb {
+    background: var(--mdui-color-outline-variant);
+    border-radius: 3px;
+}
+
+.search-placeholder {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+.search-placeholder mdui-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.search-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid var(--mdui-color-outline-variant);
+}
+
+.result-count {
+    font-size: 0.875rem;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+.search-result-item {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--mdui-color-outline-variant);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--mdui-color-surface);
+}
+
+.search-result-item:hover {
+    background: var(--mdui-color-surface-container-hover);
+    border-color: var(--mdui-color-primary);
+    transform: translateY(-2px);
+}
+
+.search-result-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--mdui-color-on-surface);
+    margin-bottom: 8px;
+}
+
+.search-result-content {
+    color: var(--mdui-color-on-surface-variant);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.search-result-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+.search-highlight {
+    background: var(--mdui-color-primary-container);
+    color: var(--mdui-color-on-primary-container);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.no-results, .search-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--mdui-color-on-surface-variant);
+}
+
+@media (max-width: 600px) {
+    .search-dialog {
+        --mdui-dialog-width: 95vw;
+        --mdui-dialog-height: 80vh;
+    }
+    
+    .search-header {
+        padding: 16px 16px 0;
+    }
+    
+    .search-content {
+        padding: 0 16px;
+    }
+    
+    .search-footer {
+        padding: 12px 16px;
+    }
+}
+</style>
+
+<script>
+class HexoSearch {
+    constructor() {
+        this.searchData = null;
+        this.dialog = document.getElementById('search-dialog');
+        this.init();
+    }
+
+    async init() {
+        this.bindEvents();
+        this.preloadSearchData();
+    }
+
+    async preloadSearchData() {
+        try {
+            const response = await fetch('/bolg/search.json');
+            this.searchData = await response.json();
+        } catch (error) {
+            console.error('搜索数据加载失败:', error);
+        }
+    }
+
+    bindEvents() {
+        const searchToggle = document.getElementById('search-toggle');
+        const searchInput = document.getElementById('search-input');
+        const searchClose = document.getElementById('search-close');
+        const searchCloseBtn = document.getElementById('search-close-btn');
+
+        searchToggle.addEventListener('click', () => {
+            this.dialog.open = true;
+            setTimeout(() => searchInput.focus(), 100);
+        });
+
+        const closeDialog = () => {
+            this.dialog.open = false;
+            searchInput.value = '';
+            this.showPlaceholder();
+        };
+
+        searchClose.addEventListener('click', closeDialog);
+        searchCloseBtn.addEventListener('click', closeDialog);
+
+        searchInput.addEventListener('input', this.debounce((e) => {
+            this.performSearch(e.target.value);
+        }, 300));
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchToggle.click();
+            }
+        });
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), wait);
+        };
+    }
+
+    performSearch(query) {
+        if (!query.trim()) {
+            this.showPlaceholder();
+            return;
+        }
+
+        if (!this.searchData) {
+            this.showError('搜索数据加载中...');
+            return;
+        }
+
+        const results = this.searchPosts(query);
+        this.displayResults(results, query);
+    }
+
+    searchPosts(query) {
+        const keywords = query.toLowerCase().split(' ').filter(k => k);
+        const allItems = [...(this.searchData.posts || []), ...(this.searchData.pages || [])];
+        
+        return allItems
+            .map(item => {
+                let score = 0;
+                const title = item.title || '';
+                const content = item.content || '';
+
+                keywords.forEach(keyword => {
+                    if (title.toLowerCase().includes(keyword)) score += 10;
+                    if (content.toLowerCase().includes(keyword)) score += 2;
+                    if (item.tags?.some(tag => tag.toLowerCase().includes(keyword))) score += 5;
+                    if (item.categories?.some(cat => cat.toLowerCase().includes(keyword))) score += 3;
+                });
+
+                return { ...item, score };
+            })
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20);
+    }
+
+    displayResults(results, query) {
+        const container = document.getElementById('search-results');
+        const countElement = document.getElementById('result-count');
+        
+        if (results.length === 0) {
+            container.innerHTML = `
+                <div class="no-results">
+                    <mdui-icon name="search_off" style="font-size: 48px; margin-bottom: 16px;"></mdui-icon>
+                    <div>没有找到包含 "${this.escapeHtml(query)}" 的内容</div>
+                </div>
+            `;
+            countElement.textContent = '';
+            return;
+        }
+
+        container.innerHTML = results.map(item => this.createResultItem(item, query)).join('');
+        countElement.textContent = `找到 ${results.length} 个结果`;
+        
+        container.querySelectorAll('.search-result-item').forEach((item, index) => {
+            item.addEventListener('click', () => {
+                window.location.href = results[index].url;
+                this.dialog.open = false;
+            });
+        });
+    }
+
+    createResultItem(item, query) {
+        const title = item.title || '无标题';
+        const content = item.content || '';
+        const highlightedTitle = this.highlightText(title, query);
+        const excerpt = this.createExcerpt(content, query);
+
+        return `
+            <div class="search-result-item">
+                <div class="search-result-title">
+                    <mdui-icon name="article" style="font-size: 16px;"></mdui-icon>
+                    ${highlightedTitle}
+                </div>
+                <div class="search-result-content">${excerpt}</div>
+                <div class="search-result-meta">
+                    ${item.date ? `<span>${item.date}</span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    highlightText(text, query) {
+        let highlighted = this.escapeHtml(text);
+        query.toLowerCase().split(' ').filter(k => k).forEach(keyword => {
+            const regex = new RegExp(`(${this.escapeRegex(keyword)})`, 'gi');
+            highlighted = highlighted.replace(regex, '<span class="search-highlight">$1</span>');
+        });
+        return highlighted;
+    }
+
+    createExcerpt(content, query) {
+        const keywords = query.toLowerCase().split(' ').filter(k => k);
+        let excerpt = this.escapeHtml(content.substring(0, 120));
+        
+        keywords.forEach(keyword => {
+            const regex = new RegExp(`(${this.escapeRegex(keyword)})`, 'gi');
+            excerpt = excerpt.replace(regex, '<span class="search-highlight">$1</span>');
+        });
+
+        return excerpt + (content.length > 120 ? '...' : '');
+    }
+
+    escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    escapeHtml(unsafe) {
+        return unsafe.replace(/[&<>"']/g, m => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[m]));
+    }
+
+    showPlaceholder() {
+        document.getElementById('search-results').innerHTML = `
+            <div class="search-placeholder">
+                <mdui-icon name="search"></mdui-icon>
+                <div>输入关键词开始搜索</div>
+            </div>
+        `;
+        document.getElementById('result-count').textContent = '';
+    }
+
+    showError(message) {
+        document.getElementById('search-results').innerHTML = `
+            <div class="no-results">${message}</div>
+        `;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => new HexoSearch());
+</script>
+        <!-- 动态配色选择器组件 -->
+<mdui-tooltip content="动态配色">
+  <mdui-button-icon id="color-picker-trigger" class="color-picker-icon">
+    <mdui-icon name="palette"></mdui-icon>
+  </mdui-button-icon>
+</mdui-tooltip>
+
+<mdui-dialog id="color-picker-dialog" class="dynamic-color-dialog" close-on-overlay-click>
+  <div class="mdui-dialog-title">动态配色</div>
+  <div class="mdui-dialog-content">
+
+    <!-- 预设颜色网格 -->
+    <div class="color-section">
+      <div class="section-label">推荐配色</div>
+      <div class="preset-colors" id="preset-colors"></div>
+    </div>
+
+    <mdui-divider class="color-divider"></mdui-divider>
+
+    <!-- 自定义颜色 -->
+    <div class="color-section">
+      <div class="section-label">自定义颜色</div>
+      <div class="custom-row">
+        <input type="color" id="native-color-picker" class="native-color-picker" value="#6750a4">
+        <input type="text" id="color-hex-input" class="color-hex-input" value="#6750a4" maxlength="7" placeholder="#000000">
+        <mdui-button id="random-color-btn" variant="tonal" icon="shuffle">随机</mdui-button>
+      </div>
+    </div>
+
+    <!-- 实时预览 -->
+    <div class="color-preview-card" id="color-preview-card">
+      <div class="preview-label">实时预览</div>
+      <div class="preview-row">
+        <div id="preview-primary" class="preview-swatch preview-swatch-primary"></div>
+        <div id="preview-on-primary" class="preview-swatch preview-swatch-on-primary">Aa</div>
+      </div>
+      <div class="preview-row">
+        <div id="preview-container" class="preview-swatch preview-swatch-container">
+          <span id="preview-on-container">主色容器</span>
+        </div>
+      </div>
+    </div>
+
+    <mdui-divider class="color-divider"></mdui-divider>
+
+    <div class="color-section">
+      <mdui-button id="reset-color-btn" variant="tonal" icon="refresh" full-width>重置为默认配色</mdui-button>
+    </div>
+
+  </div>
+  <div class="mdui-dialog-actions">
+    <mdui-button id="cancel-color-btn">取消</mdui-button>
+    <mdui-button variant="filled" id="apply-color-btn" icon="check">应用</mdui-button>
+  </div>
+</mdui-dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // MD3 官方推荐基准色
+  const PRESET_COLORS = [
+    '#6750a4', '#65558f', '#7d5260', '#7c5e00',
+    '#006a6a', '#0061a4', '#8b5000', '#5b6100',
+    '#9a471a', '#006874', '#3a6151', '#81531b'
+  ];
+
+  const trigger = document.getElementById('color-picker-trigger');
+  const dialog = document.getElementById('color-picker-dialog');
+  const cancelBtn = document.getElementById('cancel-color-btn');
+  const applyBtn = document.getElementById('apply-color-btn');
+  const nativePicker = document.getElementById('native-color-picker');
+  const hexInput = document.getElementById('color-hex-input');
+  const resetBtn = document.getElementById('reset-color-btn');
+  const randomBtn = document.getElementById('random-color-btn');
+  const presetContainer = document.getElementById('preset-colors');
+  const previewPrimary = document.getElementById('preview-primary');
+  const previewOnPrimary = document.getElementById('preview-on-primary');
+  const previewContainer = document.getElementById('preview-container');
+  const previewOnContainer = document.getElementById('preview-on-container');
+  const previewCard = document.getElementById('color-preview-card');
+
+  let selectedColor = nativePicker.value;
+  const STORAGE_KEY = 'materialis-color-scheme';
+
+  // 生成预设色按钮
+  function renderPresets() {
+    presetContainer.innerHTML = PRESET_COLORS.map((c, i) =>
+      '<button class="preset-item" data-color="' + c + '" style="background:' + c + ';animation-delay:' + (i * 30) + 'ms">' +
+      '<mdui-icon name="check" class="preset-check"></mdui-icon></button>'
+    ).join('');
+    presetContainer.querySelectorAll('.preset-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedColor = btn.dataset.color;
+        nativePicker.value = selectedColor;
+        hexInput.value = selectedColor;
+        updatePresetSelected(selectedColor);
+        updatePreview(selectedColor);
+      });
+    });
+  }
+
+  function updatePresetSelected(color) {
+    presetContainer.querySelectorAll('.preset-item').forEach(btn => {
+      btn.classList.toggle('is-selected', btn.dataset.color.toLowerCase() === (color || '').toLowerCase());
+    });
+  }
+
+  function isValidColor(c) {
+    return /^#([A-Fa-f0-9]{6})$/.test(c);
+  }
+
+  function hexToRgb(hex) {
+    return {
+      r: parseInt(hex.slice(1, 3), 16),
+      g: parseInt(hex.slice(3, 5), 16),
+      b: parseInt(hex.slice(5, 7), 16)
+    };
+  }
+
+  function blend(fg, bg, alpha) {
+    return {
+      r: Math.round(fg.r * alpha + bg.r * (1 - alpha)),
+      g: Math.round(fg.g * alpha + bg.g * (1 - alpha)),
+      b: Math.round(fg.b * alpha + bg.b * (1 - alpha))
+    };
+  }
+
+  function rgbStr(c) { return 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')'; }
+
+  // 实时预览：模拟 M3 primary / on-primary / container 配色关系
+  function updatePreview(color) {
+    if (!color || !isValidColor(color)) return;
+    const p = hexToRgb(color);
+    const lum = (0.299 * p.r + 0.587 * p.g + 0.114 * p.b) / 255;
+    const onP = lum > 0.5 ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+    const bg = lum > 0.5 ? { r: 30, g: 26, b: 32 } : { r: 255, g: 251, b: 254 };
+    const container = blend(p, bg, 0.18);
+    const onContainer = blend(p, bg, 0.72);
+
+    previewPrimary.style.backgroundColor = rgbStr(p);
+    previewOnPrimary.style.backgroundColor = rgbStr(p);
+    previewOnPrimary.style.color = rgbStr(onP);
+    previewContainer.style.backgroundColor = rgbStr(container);
+    previewOnContainer.style.color = rgbStr(onContainer);
+
+    // 预览脉冲
+    previewCard.classList.remove('pulse');
+    void previewCard.offsetWidth;
+    previewCard.classList.add('pulse');
+  }
+
+  function applyColorScheme(color) {
+    if (typeof mdui !== 'undefined' && mdui.setColorScheme) {
+      mdui.setColorScheme(color);
+    }
+  }
+
+  function removeColorScheme() {
+    if (typeof mdui !== 'undefined' && mdui.removeColorScheme) {
+      mdui.removeColorScheme();
+    }
+  }
+
+  function saveColorScheme(color) {
+    try {
+      if (color && isValidColor(color)) localStorage.setItem(STORAGE_KEY, color);
+      else localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {}
+  }
+
+  function loadSavedColorScheme() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved && isValidColor(saved)) {
+        applyColorScheme(saved);
+        nativePicker.value = saved;
+        hexInput.value = saved;
+        selectedColor = saved;
+        updatePresetSelected(saved);
+        updatePreview(saved);
+      }
+    } catch (e) {}
+  }
+
+  // 事件绑定
+  trigger.addEventListener('click', () => {
+    dialog.open = true;
+    // 触发预设色入场动画
+    presetContainer.classList.remove('anim-ready');
+    void presetContainer.offsetWidth;
+    presetContainer.classList.add('anim-ready');
+  });
+
+  cancelBtn.addEventListener('click', () => { dialog.open = false; });
+
+  nativePicker.addEventListener('input', () => {
+    selectedColor = nativePicker.value;
+    hexInput.value = selectedColor;
+    updatePresetSelected(selectedColor);
+    updatePreview(selectedColor);
+  });
+
+  hexInput.addEventListener('input', () => {
+    let v = hexInput.value.trim();
+    if (v && !v.startsWith('#')) v = '#' + v;
+    if (isValidColor(v)) {
+      selectedColor = v;
+      nativePicker.value = v;
+      updatePresetSelected(v);
+      updatePreview(v);
+    }
+  });
+
+  applyBtn.addEventListener('click', () => {
+    if (selectedColor && isValidColor(selectedColor)) {
+      applyColorScheme(selectedColor);
+      saveColorScheme(selectedColor);
+      mdui.snackbar({ message: '配色已应用', placement: 'bottom', timeout: 2000, icon: 'palette' });
+      dialog.open = false;
+    } else {
+      mdui.snackbar({ message: '请输入有效的颜色值', placement: 'bottom', timeout: 2000 });
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    removeColorScheme();
+    saveColorScheme(null);
+    selectedColor = '#6750a4';
+    nativePicker.value = selectedColor;
+    hexInput.value = selectedColor;
+    updatePresetSelected('');
+    updatePreview(selectedColor);
+    mdui.snackbar({ message: '配色已重置', placement: 'bottom', timeout: 2000, icon: 'refresh' });
+  });
+
+  randomBtn.addEventListener('click', () => {
+    const c = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    selectedColor = c;
+    nativePicker.value = c;
+    hexInput.value = c;
+    updatePresetSelected(c);
+    updatePreview(c);
+  });
+
+  // 初始化
+  renderPresets();
+  loadSavedColorScheme();
+  updatePreview(selectedColor);
+});
+</script>
+
+<style>
+.dynamic-color-dialog::part(overlay) {
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    background: rgba(0, 0, 0, 0.38);
+}
+
+.dynamic-color-dialog {
+    --mdui-dialog-width: 400px;
+    --mdui-dialog-max-height: 90vh;
+}
+
+.dynamic-color-dialog::part(panel) {
+    animation: colorPanelIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes colorPanelIn {
+    from { opacity: 0; transform: scale(0.94) translateY(-10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.mdui-dialog-title {
+    text-align: center;
+    padding: 22px 24px 4px;
+    font-weight: 600;
+    font-size: 1.15rem;
+}
+
+.mdui-dialog-content {
+    padding: 12px 24px 8px;
+}
+
+.mdui-dialog-actions {
+    padding: 8px 24px 20px;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.color-section {
+    margin-bottom: 14px;
+}
+
+.color-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.color-divider {
+    margin: 14px 0;
+}
+
+/* ===== 预设色网格 ===== */
+.preset-colors {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+
+.preset-item {
+    position: relative;
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.anim-ready .preset-item {
+    animation: presetIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes presetIn {
+    to { opacity: 1; transform: scale(1); }
+}
+
+.preset-item:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.14);
+}
+
+.preset-item.is-selected {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgb(var(--mdui-color-primary)), 0 4px 10px rgba(0,0,0,0.12);
+}
+
+.preset-check {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    color: #fff;
+    font-size: 20px !important;
+    opacity: 0;
+    transform: scale(0.3) rotate(-20deg);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+.preset-item.is-selected .preset-check {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+}
+
+/* ===== 自定义颜色行 ===== */
+.custom-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.native-color-picker {
+    width: 52px;
+    height: 44px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+
+.native-color-picker:hover {
+    transform: translateY(-2px);
+}
+
+.native-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.native-color-picker::-webkit-color-swatch {
+    border: 1px solid rgb(var(--mdui-color-outline-variant));
+    border-radius: 10px;
+}
+.native-color-picker::-moz-color-swatch {
+    border: 1px solid rgb(var(--mdui-color-outline-variant));
+    border-radius: 10px;
+}
+
+.color-hex-input {
+    width: 100%;
+    height: 44px;
+    border: 1px solid rgb(var(--mdui-color-outline-variant));
+    border-radius: 10px;
+    background: rgb(var(--mdui-color-surface-container-low));
+    color: rgb(var(--mdui-color-on-surface));
+    font-family: monospace;
+    font-size: 0.95rem;
+    text-align: center;
+    text-transform: lowercase;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.color-hex-input:focus {
+    border-color: rgb(var(--mdui-color-primary));
+    box-shadow: 0 0 0 3px rgb(var(--mdui-color-primary) / 0.12);
+}
+
+/* ===== 预览卡片 ===== */
+.color-preview-card {
+    background: rgb(var(--mdui-color-surface-container-low));
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 14px;
+    border: 1px solid rgba(var(--mdui-color-outline-variant), 0.3);
+    transition: box-shadow 0.3s ease;
+}
+
+.color-preview-card.pulse {
+    animation: previewPulse 0.5s ease;
+}
+
+@keyframes previewPulse {
+    0%   { box-shadow: 0 0 0 0 rgb(var(--mdui-color-primary) / 0.25); }
+    60%  { box-shadow: 0 0 0 10px rgb(var(--mdui-color-primary) / 0); }
+    100% { box-shadow: 0 0 0 0 rgb(var(--mdui-color-primary) / 0); }
+}
+
+.preview-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.preview-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.preview-row:last-child {
+    margin-bottom: 0;
+}
+
+.preview-swatch {
+    height: 38px;
+    border-radius: 10px;
+    transition: background-color 0.35s cubic-bezier(0.4,0,0.2,1), color 0.35s ease;
+}
+
+.preview-swatch-primary {
+    flex: 0 0 38px;
+    width: 38px;
+}
+
+.preview-swatch-on-primary {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+}
+
+.preview-swatch-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#preview-on-container {
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.35s ease;
+}
+
+/* 触发按钮 */
+.color-picker-icon {
+    color: rgb(var(--mdui-color-on-surface-variant));
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+
+.color-picker-icon:hover {
+    color: rgb(var(--mdui-color-primary));
+    transform: rotate(-15deg) scale(1.08);
+}
+
+@media (max-width: 600px) {
+    .dynamic-color-dialog { --mdui-dialog-width: 92vw; }
+    .preset-colors { gap: 8px; }
+    .mdui-dialog-content { padding: 12px 18px 8px; }
+    .mdui-dialog-actions { padding: 8px 18px 16px; }
+}
+</style>
+
+        
+    </div>
+
+    <!-- 移动端：折叠到一个「更多」按钮 -->
+    <div class="appbar-actions-mobile">
+        <mdui-dropdown id="appbar-mobile-menu">
+            <mdui-button-icon slot="trigger">
+                <mdui-icon name="more_vert"></mdui-icon>
+            </mdui-button-icon>
+            <mdui-menu>
+                <mdui-menu-item id="mobile-search-btn">
+                    <mdui-icon slot="icon" name="search"></mdui-icon>
+                    搜索
+                </mdui-menu-item>
+                <mdui-menu-item id="mobile-color-btn">
+                    <mdui-icon slot="icon" name="palette"></mdui-icon>
+                    动态配色
+                </mdui-menu-item>
+                <mdui-menu-item id="mobile-display-btn">
+                    <mdui-icon slot="icon" name="auto_mode"></mdui-icon>
+                    显示模式
+                </mdui-menu-item>
+                
+            </mdui-menu>
+        </mdui-dropdown>
+    </div>
+</mdui-top-app-bar>
+
+<!-- 移动端显示模式选择弹窗（三选项：浅色/深色/跟随系统） -->
+<mdui-dialog id="mobile-display-dialog" class="mobile-display-dialog">
+    <div class="mdui-dialog-title">显示模式</div>
+    <mdui-list class="mobile-display-list">
+        <mdui-list-item id="mobile-mode-light" rounded>
+            <mdui-icon slot="icon" name="light_mode"></mdui-icon>
+            浅色
+        </mdui-list-item>
+        <mdui-list-item id="mobile-mode-dark" rounded>
+            <mdui-icon slot="icon" name="dark_mode"></mdui-icon>
+            深色
+        </mdui-list-item>
+        <mdui-list-item id="mobile-mode-auto" rounded>
+            <mdui-icon slot="icon" name="auto_mode"></mdui-icon>
+            跟随系统
+        </mdui-list-item>
+    </mdui-list>
+</mdui-dialog>
+
+<style>
+.appbar-actions-desktop {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.appbar-actions-mobile {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .appbar-actions-desktop {
+        display: none;
+    }
+    .appbar-actions-mobile {
+        display: inline-flex;
+        align-items: center;
+    }
+}
+
+.mobile-display-dialog {
+    --mdui-dialog-width: 320px;
+}
+
+.mobile-display-list {
+    padding: 8px 16px 16px;
+}
+
+.mobile-display-list mdui-list-item {
+    margin: 4px 0;
+    border-radius: 10px;
+}
+
+.mobile-display-list mdui-list-item:hover {
+    background-color: rgb(var(--mdui-color-surface-container-high));
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== 关键修复：将所有 mdui-dialog 移到 body 下 =====
+    // 这样 .appbar-actions-desktop 的 display:none 不会影响弹窗显示
+    var desktopActions = document.querySelector('.appbar-actions-desktop');
+    if (desktopActions) {
+        var dialogs = desktopActions.querySelectorAll('mdui-dialog');
+        dialogs.forEach(function(d) {
+            document.body.appendChild(d);
+        });
+    }
+
+    // ===== 移动端菜单项：直接操作弹窗 =====
+    var menuActions = {
+        'mobile-search-btn': 'search-dialog',
+        'mobile-color-btn': 'color-picker-dialog',
+        'mobile-toc-btn': 'toc-dialog'
+    };
+
+    Object.keys(menuActions).forEach(function(menuId) {
+        var item = document.getElementById(menuId);
+        var dialogId = menuActions[menuId];
+        if (!item) return;
+
+        item.addEventListener('click', function() {
+            // 关闭移动端下拉菜单
+            var dropdown = document.getElementById('appbar-mobile-menu');
+            if (dropdown) dropdown.open = false;
+
+            // 延迟打开弹窗（等下拉菜单关闭动画完成）
+            setTimeout(function() {
+                var dialog = document.getElementById(dialogId);
+                if (dialog) {
+                    dialog.open = true;
+                }
+                // TOC 特殊处理：触发目录生成
+                if (menuId === 'mobile-toc-btn' && window.hexoTOC) {
+                    window.hexoTOC.generate();
+                }
+            }, 150);
+        });
+    });
+
+    // ===== 复制链接（移动端） =====
+    var shareBtn = document.getElementById('mobile-share-btn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            var dropdown = document.getElementById('appbar-mobile-menu');
+            if (dropdown) dropdown.open = false;
+
+            setTimeout(function() {
+                // 直接复制 URL
+                var currentUrl = window.location.href;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(currentUrl).then(function() {
+                        mdui.snackbar({ message: '链接已复制', placement: 'bottom', timeout: 2000 });
+                    }).catch(function() {
+                        mdui.snackbar({ message: '复制失败', placement: 'bottom', timeout: 2000 });
+                    });
+                }
+            }, 150);
+        });
+    }
+
+    // ===== 显示模式：三选项弹窗 =====
+    var displayBtn = document.getElementById('mobile-display-btn');
+    var displayDialog = document.getElementById('mobile-display-dialog');
+
+    if (displayBtn && displayDialog) {
+        displayBtn.addEventListener('click', function() {
+            var dropdown = document.getElementById('appbar-mobile-menu');
+            if (dropdown) dropdown.open = false;
+
+            setTimeout(function() {
+                displayDialog.open = true;
+            }, 150);
+        });
+
+        // 三个模式选项
+        var modes = [
+            { id: 'mobile-mode-light', value: 'light' },
+            { id: 'mobile-mode-dark', value: 'dark' },
+            { id: 'mobile-mode-auto', value: 'auto' }
+        ];
+
+        modes.forEach(function(m) {
+            var el = document.getElementById(m.id);
+            if (el) {
+                el.addEventListener('click', function() {
+                    displayDialog.open = false;
+
+                    // 调用 appbar.js 中的 changeDisplayMode 逻辑
+                    var menu = document.querySelector('.appbar-display-mode');
+                    if (menu) {
+                        menu.value = m.value;
+                        // 触发 change 事件，appbar.js 会处理主题切换
+                        menu.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+        });
+    }
+});
+</script>
+
+    <mdui-navigation-drawer class="sidebar-content" close-on-overlay-click no-animation>
+    <!-- 用户信息卡片 -->
+    
+    <div class="sidebar-user-card">
+        
+            <mdui-avatar class="sidebar-user-avatar" src="/img/avatar.jpg"></mdui-avatar>
+        
+        
+            <div class="sidebar-user-name">喻清梅</div>
+        
+        
+            <div class="sidebar-user-slogen">small Steps build great journeys</div>
+        
+        </div>
+    
+    
+    <!-- 导航菜单 -->
+    <mdui-list class="nav-list">
+        
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/"
+                    rounded
+                    
+                    active
+                    
+                >
+                    <mdui-icon slot="icon" name="home"></mdui-icon>
+                    首页
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/diary/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="article"></mdui-icon>
+                    文章归档
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/categories/"
+                    rounded
+                    
+                    active
+                    
+                >
+                    <mdui-icon slot="icon" name="category"></mdui-icon>
+                    分类
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/tags/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="tag"></mdui-icon>
+                    标签
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/about/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="person"></mdui-icon>
+                    关于
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/links/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="link"></mdui-icon>
+                    友链
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/shuoshuo/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="chat"></mdui-icon>
+                    说说
+                </mdui-list-item>
+            
+                <mdui-list-item 
+                    class="nav-item"
+                    href="/bolg/message/"
+                    rounded
+                    
+                    variant="filled"
+                    
+                >
+                    <mdui-icon slot="icon" name="message"></mdui-icon>
+                    留言
+                </mdui-list-item>
+            
+        
+    </mdui-list>
+
+
+
+</mdui-navigation-drawer>
+    <main class="main">
+        <div class="page-transition-container">
+            <div class="banner-wrapper">
+    <link rel="stylesheet" href="/fonts/banner/banner.css">
+
+<div class="banner-container">
+    <mdui-card class="banner-title">
+        <div class="banner-title-text1">Materialis</div>
+        <div class="banner-title-text2">A Material Design 3 theme for Hexo.</div>
+
+        
+    </mdui-card>
+
+    <mdui-card class="banner-image">
+        <div style="margin: 16px; text-align: center;">
+            <p class="banner-hitokoto" variant="filled">
+                <mdui-icon slot="icon">format_quote</mdui-icon>
+                <span id="hitokoto_text" style="color: var(--mdui-color-on-surface); text-decoration: none; font-style: italic;">
+                    <span id="hitokoto_inner">获取中...</span><span id="hitokoto_cursor">|</span>
+                </span>
+            </p>
+        </div>
+
+        <script>
+        (function(){
+            function typeText(el, text, speed, cursorEl) {
+                if (!el) return;
+                el.textContent = '';
+                let i = 0;
+                if (cursorEl) cursorEl.style.opacity = '1';
+                function step(){
+                    if (i < text.length) {
+                        el.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(step, speed);
+                    } else {
+                        if (cursorEl) cursorEl.style.opacity = '0';
+                    }
+                }
+                step();
+            }
+
+            function fetchHitokoto(){
+                fetch('https://v1.hitokoto.cn')
+                    .then(function(r){ return r.json(); })
+                    .then(function(data){
+                        var inner = document.getElementById('hitokoto_inner');
+                        var cursor = document.getElementById('hitokoto_cursor');
+                        if (!inner) return;
+                        if (data && data.hitokoto) {
+                            var text = data.hitokoto + (data.from ? ' — ' + data.from : '');
+                            typeText(inner, text, 40, cursor);
+                        }
+                    })
+                    .catch(function(){ /* ignore errors */ });
+            }
+
+            // 添加简单的光标闪烁样式
+            var _s = document.createElement('style');
+            _s.textContent = '#hitokoto_cursor{display:inline-block;margin-left:6px;opacity:1;transition:opacity .2s}@keyframes _hk{0%{opacity:1}50%{opacity:0}100%{opacity:1}} #hitokoto_cursor{animation:_hk 1s steps(1) infinite}';
+            document.head.appendChild(_s);
+
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                fetchHitokoto();
+            } else {
+                document.addEventListener('DOMContentLoaded', fetchHitokoto);
+            }
+        })();
+        </script>
+    </mdui-card>
+</div>
+</div>
+<mdui-layout-main>
+    <div class="articles-container">
+        
+        
+        
+            
+                <mdui-card
+    class="post-card"
+    variant="filled"
+    onclick="location.href='/bolg/2026/10/03/1.2%E6%95%B0%E5%AD%97%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/'"
+    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='/bolg/2026/10/03/1.2%E6%95%B0%E5%AD%97%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/'}"
+    role="link"
+    tabindex="0"
+    aria-label="1.2数字技术基础">
+
+    
+
+    <div class="post-card__body">
+        <div class="post-card__header">
+            
+                <span class="post-card__badge post-card__badge--inline">
+                    <mdui-icon name="folder"></mdui-icon>
+                    专本备考
+                </span>
+            
+            <h3 class="post-card__title">1.2数字技术基础</h3>
+        </div>
+
+        <p class="post-card__excerpt">
+            一、信息的基本单位—比特bit1、比特的定义
+比特只有两种状态：&#x3D;&#x3D;”0”&#x3D;&#x3D; 和 &#x3D;&#x3D;”1”&#x3D;&#x3D; ，没有大小的概念
+既可以表示&#x3D;&#x3D;数值&#x3D;&#x3D;、&#x3D;&#x3D;文字&#...
+        </p>
+
+        <div class="post-card__meta">
+            <span class="post-card__date">
+                <mdui-icon name="calendar_today"></mdui-icon>
+                2026-10-03
+            </span>
+            <div class="post-card__tags">
+                
+                    
+                        <span class="post-card__tag">
+                            <mdui-icon name="sell"></mdui-icon>
+                            未分类
+                        </span>
+                    
+                    
+                
+            </div>
+        </div>
+
+        <div class="post-card__action">
+            <span class="post-card__read-more">阅读更多</span>
+            <mdui-icon name="arrow_forward" class="post-card__arrow"></mdui-icon>
+        </div>
+    </div>
+</mdui-card>
+
+            
+                <mdui-card
+    class="post-card"
+    variant="filled"
+    onclick="location.href='/bolg/2026/10/03/1.1%E6%B6%88%E6%81%AF%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8A%80%E6%9C%AF/'"
+    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='/bolg/2026/10/03/1.1%E6%B6%88%E6%81%AF%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8A%80%E6%9C%AF/'}"
+    role="link"
+    tabindex="0"
+    aria-label="1.1消息与信息技术">
+
+    
+
+    <div class="post-card__body">
+        <div class="post-card__header">
+            
+                <span class="post-card__badge post-card__badge--inline">
+                    <mdui-icon name="folder"></mdui-icon>
+                    专本备考
+                </span>
+            
+            <h3 class="post-card__title">1.1消息与信息技术</h3>
+        </div>
+
+        <p class="post-card__excerpt">
+            一、信息1、信息的定义   信息是指事物运动的状态及状态变化的方式，是认识主题感知或所表述的事物运动的运动及其变化方式的形式、内容和效用。
+2、客观世界的三大构成要素&#x3D;&#x3D;信息&#x3D;&#x3D;  &#x3D;&#x3D;物质&#x3D;&#x3D; &#x3D;&#x...
+        </p>
+
+        <div class="post-card__meta">
+            <span class="post-card__date">
+                <mdui-icon name="calendar_today"></mdui-icon>
+                2026-10-03
+            </span>
+            <div class="post-card__tags">
+                
+                    
+                        <span class="post-card__tag">
+                            <mdui-icon name="sell"></mdui-icon>
+                            未分类
+                        </span>
+                    
+                    
+                
+            </div>
+        </div>
+
+        <div class="post-card__action">
+            <span class="post-card__read-more">阅读更多</span>
+            <mdui-icon name="arrow_forward" class="post-card__arrow"></mdui-icon>
+        </div>
+    </div>
+</mdui-card>
+
+            
+                <mdui-card
+    class="post-card"
+    variant="filled"
+    onclick="location.href='/bolg/2026/10/03/%E4%BD%BF%E7%94%A8-Hexo-%E6%A1%86%E6%9E%B6%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/'"
+    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='/bolg/2026/10/03/%E4%BD%BF%E7%94%A8-Hexo-%E6%A1%86%E6%9E%B6%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/'}"
+    role="link"
+    tabindex="0"
+    aria-label="安装 Hexo 框架">
+
+    
+
+    <div class="post-card__body">
+        <div class="post-card__header">
+            
+            <h3 class="post-card__title">安装 Hexo 框架</h3>
+        </div>
+
+        <p class="post-card__excerpt">
+              Hexo 是一个基于 Node.js 的框架，所以使用这个框架的条件就是要有 Node.js ，与此同时为了方便框架的安装与生成，还需要安装一个从 GitHub 上拉源码的工具 Git，所以一共需要这么几个工具：
+
+
+Node.js：一个 JavaScript 引擎，Hexo 框架的基础
+...
+        </p>
+
+        <div class="post-card__meta">
+            <span class="post-card__date">
+                <mdui-icon name="calendar_today"></mdui-icon>
+                2026-10-03
+            </span>
+            <div class="post-card__tags">
+                
+                    
+                        <span class="post-card__tag">
+                            <mdui-icon name="sell"></mdui-icon>
+                            未分类
+                        </span>
+                    
+                    
+                
+            </div>
+        </div>
+
+        <div class="post-card__action">
+            <span class="post-card__read-more">阅读更多</span>
+            <mdui-icon name="arrow_forward" class="post-card__arrow"></mdui-icon>
+        </div>
+    </div>
+</mdui-card>
+
+            
+                <mdui-card
+    class="post-card"
+    variant="filled"
+    onclick="location.href='/bolg/2026/09/22/links/'"
+    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='/bolg/2026/09/22/links/'}"
+    role="link"
+    tabindex="0"
+    aria-label="">
+
+    
+
+    <div class="post-card__body">
+        <div class="post-card__header">
+            
+            <h3 class="post-card__title"></h3>
+        </div>
+
+        <p class="post-card__excerpt">
+            [{"name":"饭啵啵的家","url":"https://ivoinkwell.xyz","avatar":null,"desc":"一个技术博客"},{"name":"帅气多金的单身富少","url":"https://xuan301.ccwu.cc","avatar":null,"d...
+        </p>
+
+        <div class="post-card__meta">
+            <span class="post-card__date">
+                <mdui-icon name="calendar_today"></mdui-icon>
+                2026-09-22
+            </span>
+            <div class="post-card__tags">
+                
+            </div>
+        </div>
+
+        <div class="post-card__action">
+            <span class="post-card__read-more">阅读更多</span>
+            <mdui-icon name="arrow_forward" class="post-card__arrow"></mdui-icon>
+        </div>
+    </div>
+</mdui-card>
+
+            
+                <mdui-card
+    class="post-card"
+    variant="filled"
+    onclick="location.href='/bolg/2026/09/22/hello-world/'"
+    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='/bolg/2026/09/22/hello-world/'}"
+    role="link"
+    tabindex="0"
+    aria-label="Hello World">
+
+    
+
+    <div class="post-card__body">
+        <div class="post-card__header">
+            
+            <h3 class="post-card__title">Hello World</h3>
+        </div>
+
+        <p class="post-card__excerpt">
+            Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer ...
+        </p>
+
+        <div class="post-card__meta">
+            <span class="post-card__date">
+                <mdui-icon name="calendar_today"></mdui-icon>
+                2026-09-22
+            </span>
+            <div class="post-card__tags">
+                
+            </div>
+        </div>
+
+        <div class="post-card__action">
+            <span class="post-card__read-more">阅读更多</span>
+            <mdui-icon name="arrow_forward" class="post-card__arrow"></mdui-icon>
+        </div>
+    </div>
+</mdui-card>
+
+            
+        
+    </div>
+</mdui-layout-main>
+        </div>
+    </main>
+
+    <!-- 全局回到顶部 FAB -->
+    <mdui-fab class="back-to-top-fab" id="back-to-top-fab" variant="primary" size="small">
+        <mdui-icon slot="icon" name="arrow_upward"></mdui-icon>
+    </mdui-fab>
+
+    <br>
+<mdui-divider></mdui-divider>
+<mdui-footer class="site-footer">
+  <div class="footer-content">
+    
+    <!-- 主要信息区域 -->
+    <div class="footer-main">
+      <!-- 版权信息 -->
+      <div class="copyright">
+        <mdui-chip variant="filled" class="footer-chip">
+          <mdui-icon name="copyright" slot="icon"></mdui-icon>
+          &copy; 2026 
+          <a href="/bolg/" class="site-link">喻清洛的知识小屋</a>
+          
+            · 保留所有权利
+          
+        </mdui-chip>
+      </div>
+
+      <div class="theme">
+        <mdui-chip variant="filled" class="footer-chip">
+          <mdui-icon name="code" slot="icon"></mdui-icon>
+          <a target="_blank" rel="noopener" href="https://github.com/can1425/materialis" class="site-link">Materialis</a>
+        </mdui-chip>
+      </div>
+
+      <!-- 备案信息 -->
+      
+
+
+
+      <!-- 自定义徽章 -->
+      
+    </div>
+
+  </div>
+</mdui-footer>
+
+<style>
+/* 强制底部布局 */
+.site-footer {
+  background: var(--mdui-color-surface);
+  border-top: 1px solid var(--mdui-color-outline-variant);
+  margin-top: auto !important;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+/* 主要信息区域 */
+.footer-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Chip 通用样式 */
+.footer-chip {
+  --mdui-chip-height: 32px;
+  --mdui-chip-container-color: var(--mdui-color-surface-container);
+  --mdui-chip-outline-color: var(--mdui-color-outline-variant);
+  transition: all 0.3s ease;
+  font-family: var(--mdui-font-family);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.footer-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 版权信息 Chip */
+.copyright .footer-chip {
+  --mdui-chip-container-color: var(--mdui-color-primary-container);
+  --mdui-chip-label-text-color: var(--mdui-color-on-primary-container);
+}
+
+/* 备案信息 Chip */
+.beian-chip {
+  --mdui-chip-container-color: var(--mdui-color-secondary-container);
+  --mdui-chip-label-text-color: var(--mdui-color-on-secondary-container);
+}
+
+/* 主题信息 Chip */
+.theme-info .footer-chip {
+  --mdui-chip-outline-color: var(--mdui-color-primary);
+  --mdui-chip-label-text-color: var(--mdui-color-primary);
+}
+
+/* 链接样式 */
+.site-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.site-link:hover {
+  text-decoration: underline;
+}
+
+.tech-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.tech-link:hover {
+  text-decoration: underline;
+}
+
+/* 备案信息 */
+.beian-info {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 自定义徽章 */
+.custom-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.custom-badge {
+  cursor: pointer;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .footer-main {
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .custom-badges {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    padding: 1rem;
+  }
+  
+  .footer-main {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .custom-badges {
+    justify-content: center;
+  }
+  
+  .beian-info {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .footer-chip {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    padding: 0.75rem;
+  }
+  
+  .footer-chip {
+    --mdui-chip-height: 28px;
+    font-size: 0.875rem;
+  }
+  
+  .custom-badges,
+  .beian-info {
+    width: 100%;
+  }
+}
+</style>
+
+    
+<style>
+/* ===== 音乐球（mdui 风格 + Apple 毛玻璃） ===== */
+.music-widget {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9000;
+    font-family: var(--mdui-font-family);
+}
+
+/* 折叠态：旋转球 */
+.music-ball {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background: linear-gradient(135deg,
+        rgb(var(--mdui-color-primary)),
+        rgb(var(--mdui-color-tertiary)));
+    box-shadow: 0 4px 16px rgb(var(--mdui-color-primary) / 0.35),
+                0 1px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+                box-shadow 0.25s ease;
+    position: relative;
+}
+
+.music-ball:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 22px rgb(var(--mdui-color-primary) / 0.45);
+}
+
+.music-ball:active {
+    transform: scale(0.95);
+}
+
+.music-ball-cover {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.music-ball-cover mdui-icon {
+    color: #fff;
+    font-size: 28px;
+}
+
+.music-ball.playing .music-ball-cover {
+    animation: music-spin 12s linear infinite;
+}
+
+/* 播放时小球呼吸光晕 */
+.music-ball.playing::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgb(var(--mdui-color-primary) / 0.4);
+    animation: music-pulse 2s ease-out infinite;
+}
+
+@keyframes music-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes music-pulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* 展开态：播放面板 */
+.music-panel {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 300px;
+    padding: 16px;
+    border-radius: 20px;
+    background: rgb(var(--mdui-color-surface-container) / 0.82);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(var(--mdui-color-outline-variant), 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px) scale(0.96);
+    transform-origin: bottom right;
+    transition: opacity 0.25s ease,
+                transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+                visibility 0.25s;
+}
+
+.music-widget.expanded .music-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.music-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.music-panel-cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgb(var(--mdui-color-primary-container));
+    color: rgb(var(--mdui-color-on-primary-container));
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.music-panel-cover mdui-icon {
+    font-size: 24px;
+}
+
+.music-panel-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.music-panel-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgb(var(--mdui-color-on-surface));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-panel-artist {
+    font-size: 0.78rem;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.music-close {
+    flex-shrink: 0;
+    --mdui-color-on-surface: var(--mdui-color-on-surface-variant);
+}
+
+.music-slider {
+    width: 100%;
+    margin: 6px 0 2px;
+}
+
+.music-time {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: rgb(var(--mdui-color-on-surface-variant));
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.music-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.music-play-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgb(var(--mdui-color-primary));
+    color: rgb(var(--mdui-color-on-primary));
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgb(var(--mdui-color-primary) / 0.4);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    margin: 0 4px;
+}
+
+.music-play-btn:hover {
+    background: rgb(var(--mdui-color-primary) / 0.88);
+}
+
+.music-play-btn:active {
+    transform: scale(0.92);
+}
+
+.music-play-btn mdui-icon {
+    font-size: 24px;
+}
+
+.music-prev-icon,
+.music-next-icon {
+    --mdui-color-on-surface: var(--mdui-color-on-surface-variant);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .music-widget {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .music-ball {
+        width: 50px;
+        height: 50px;
+    }
+
+    .music-ball-cover mdui-icon {
+        font-size: 24px;
+    }
+
+    .music-panel {
+        width: calc(100vw - 32px);
+        max-width: 300px;
+        bottom: 62px;
+    }
+}
+
+/* 尊重减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .music-ball.playing .music-ball-cover {
+        animation: none;
+    }
+    .music-ball.playing::after {
+        animation: none;
+        display: none;
+    }
+    .music-panel {
+        transition-duration: 0.01ms;
+    }
+}
+</style>
+
+<div class="music-widget" id="music-widget">
+    <!-- 折叠态：旋转唱片球 -->
+    <button class="music-ball" id="music-ball" aria-label="音乐播放器">
+        <span class="music-ball-cover" id="music-ball-cover">
+            <mdui-icon name="music_note"></mdui-icon>
+        </span>
+    </button>
+
+    <!-- 展开态：播放面板 -->
+    <div class="music-panel" id="music-panel">
+        <div class="music-panel-head">
+            <span class="music-panel-cover" id="music-panel-cover">
+                <mdui-icon name="music_note"></mdui-icon>
+            </span>
+            <div class="music-panel-info">
+                <div class="music-panel-title" id="music-panel-title">未在播放</div>
+                <div class="music-panel-artist" id="music-panel-artist">- -</div>
+            </div>
+            <mdui-button-icon id="music-close" class="music-close" aria-label="收起">
+                <mdui-icon name="close"></mdui-icon>
+            </mdui-button-icon>
+        </div>
+
+        <mdui-slider id="music-slider" class="music-slider" value="0" max="100"></mdui-slider>
+
+        <div class="music-time">
+            <span id="music-current">0:00</span>
+            <span id="music-duration">0:00</span>
+        </div>
+
+        <div class="music-controls">
+            <mdui-button-icon id="music-prev" aria-label="上一首">
+                <mdui-icon name="skip_previous" class="music-prev-icon"></mdui-icon>
+            </mdui-button-icon>
+            <button class="music-play-btn" id="music-play" aria-label="播放/暂停">
+                <mdui-icon name="play_arrow" id="music-play-icon"></mdui-icon>
+            </button>
+            <mdui-button-icon id="music-next" aria-label="下一首">
+                <mdui-icon name="skip_next" class="music-next-icon"></mdui-icon>
+            </mdui-button-icon>
+        </div>
+    </div>
+
+    <audio id="music-audio" preload="metadata"></audio>
+</div>
+
+<script>
+// 注入音乐配置（由主题 _config.yml 生成）
+window.MUSIC_CONFIG = {
+    api: "",
+    playlistId: "",
+    playlist: [{"url":"/audio/music.flac","name":"梦里梦外都是你","artist":"本地音频","cover":""}]
+};
+</script>
+<script defer src="/js/widgets/music.js"></script>
+
+
+</body>
+
+<script type="module" src="/js/loading.js"></script>
+<script defer src="/js/widgets/appbar.js"></script>
+<script defer src="/js/page-transition.js"></script>
+<script>
+// 全局回到顶部 FAB 逻辑
+(function () {
+    var fab = document.getElementById('back-to-top-fab');
+    if (!fab) return;
+    var ticking = false;
+    function update() {
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > 300) fab.classList.add('is-visible');
+        else fab.classList.remove('is-visible');
+        ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+        if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    fab.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    update();
+})();
+</script>
+<script>        
+
+console.log(`
+███╗   ███╗ █████╗ ████████╗███████╗██████╗ ██╗ █████╗ ██╗     ██╗███████╗
+████╗ ████║██╔══██╗╚══██╔══╝██╔════╝██╔══██╗██║██╔══██╗██║     ██║██╔════╝
+██╔████╔██║███████║   ██║   █████╗  ██████╔╝██║███████║██║     ██║███████╗
+██║╚██╔╝██║██╔══██║   ██║   ██╔══╝  ██╔══██╗██║██╔══██║██║     ██║╚════██║
+██║ ╚═╝ ██║██║  ██║   ██║   ███████╗██║  ██║██║██║  ██║███████╗██║███████║
+╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚══════╝
+`);
+</script>
+
+<!-- 引入自定义 CSS -->
+
+
+<!-- 自定义头部代码 -->
+
+<!-- 引入自定义 JS -->
+
+
+<!-- 自定义底部代码 -->
+
+
+<!-- 纪念日黑白效果 -->
+
+<script>
+(function() {
+    // 获取今天的日期（月-日格式）
+    const today = new Date();
+    const month = today.getMonth() + 1; // 月份从0开始，需要+1
+    const day = today.getDate();
+    const todayStr = month + '.' + day;
+    
+    // 获取配置的纪念日列表
+    const memorialDays = JSON.parse('[7.7,9.18,12.13]');
+    
+    // 检查今天是否为纪念日
+    if (memorialDays.includes(todayStr)) {
+        // 应用黑白效果
+        const style = document.createElement('style');
+        style.innerHTML = `
+            html {
+                filter: grayscale(100%);
+                -webkit-filter: grayscale(100%);
+                -moz-filter: grayscale(100%);
+                -ms-filter: grayscale(100%);
+                -o-filter: grayscale(100%);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+})();
+</script>
+
+</html>
