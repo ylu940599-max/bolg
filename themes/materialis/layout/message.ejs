@@ -1,0 +1,215 @@
+<style>
+.message-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.message-header {
+    width: 100%;
+    text-align: center;
+    padding: 40px 32px;
+    border-radius: 24px;
+    background-color: rgb(var(--mdui-color-primary-container));
+    color: rgb(var(--mdui-color-on-primary-container));
+}
+
+.message-section {
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: rgb(var(--mdui-color-surface-container));
+    color: rgb(var(--mdui-color-on-surface));
+}
+
+.message-section-header {
+    padding: 24px 32px;
+    background: rgb(var(--mdui-color-surface-container));
+    color: rgb(var(--mdui-color-on-primary-container));
+}
+
+.message-section-content {
+    padding: 32px;
+}
+
+.message-email-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.message-email-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 16px;
+    background-color: rgb(var(--mdui-color-surface-container-high));
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.message-email-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    background-color: rgb(var(--mdui-color-surface-container-highest));
+}
+
+.message-email-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background-color: rgb(var(--mdui-color-primary-container));
+    color: rgb(var(--mdui-color-on-primary-container));
+    font-size: 24px;
+}
+
+.message-email-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.message-email-name {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.message-email-address {
+    font-size: 14px;
+    opacity: 0.7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.message-comment-card {
+    width: 100%;
+    border-radius: 20px;
+    padding: 32px;
+    background-color: rgb(var(--mdui-color-surface-container));
+}
+
+.message-comment-title {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: rgb(var(--mdui-color-primary));
+}
+
+@media (max-width: 768px) {
+    .message-page {
+        padding: 24px 16px;
+        gap: 16px;
+    }
+
+    .message-header {
+        padding: 24px 20px;
+    }
+
+    .message-section-content {
+        padding: 20px;
+    }
+
+    .message-email-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .message-comment-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .message-page {
+        padding: 20px 12px;
+        gap: 12px;
+    }
+
+    .message-header {
+        padding: 20px 16px;
+    }
+
+    .message-section-content {
+        padding: 16px;
+    }
+}
+</style>
+
+<div class="message-page">
+    <!-- 页面标题 -->
+    <mdui-card class="message-header">
+        <mdui-typography variant="h3" style="margin-bottom: 12px; font-weight: 500;">
+            <%= __('message.title') %>
+        </mdui-typography>
+        <mdui-typography variant="h6" style="opacity: 0.8; font-weight: 400;">
+            <%= __('message.subtitle') %>
+        </mdui-typography>
+    </mdui-card>
+
+    <!-- 邮箱联系方式 -->
+    <mdui-card class="message-section">
+        <div class="message-section-header">
+            <mdui-typography variant="h5" style="font-weight: 500;"><%= __('message.email') %></mdui-typography>
+        </div>
+        <div class="message-section-content">
+            <div class="message-email-grid">
+                <a href="mailto:ylu940599@gmail.com" class="message-email-card" target="_blank" rel="noopener">
+                    <div class="message-email-icon">
+                        <mdui-icon>email</mdui-icon>
+                    </div>
+                    <div class="message-email-info">
+                        <div class="message-email-name">Gmail</div>
+                        <div class="message-email-address">ylu940599@gmail.com</div>
+                    </div>
+                </a>
+                <a href="mailto:1204740834@qq.com" class="message-email-card" target="_blank" rel="noopener">
+                    <div class="message-email-icon">
+                        <mdui-icon>email</mdui-icon>
+                    </div>
+                    <div class="message-email-info">
+                        <div class="message-email-name">QQ 邮箱</div>
+                        <div class="message-email-address">1204740834@qq.com</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </mdui-card>
+
+    <!-- 留言面板 -->
+    <mdui-card variant="filled" class="message-comment-card">
+        <mdui-typography variant="h5" class="message-comment-title">
+            <%= __('message.leave_message') %>
+        </mdui-typography>
+        <% if (theme.comment && theme.comment.service) { %>
+            <% if (theme.comment.service === 'twikoo') { %>
+                <%- include('widgets/comments/twikoo.ejs') %>
+            <% } else if (theme.comment.service === 'waline') { %>
+                <%- include('widgets/comments/waline.ejs') %>
+            <% } else if (theme.comment.service === 'giscus') { %>
+                <%- include('widgets/comments/giscus.ejs') %>
+            <% } else { %>
+                <div style="text-align: center; padding: 2rem;">
+                    <mdui-typography variant="body2" style="color: var(--mdui-color-on-surface-variant);">
+                        <%= __('message.comment_disabled') %>
+                    </mdui-typography>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div style="text-align: center; padding: 2rem;">
+                <mdui-typography variant="body2" style="color: var(--mdui-color-on-surface-variant);">
+                    <%= __('message.comment_disabled') %>
+                </mdui-typography>
+            </div>
+        <% } %>
+    </mdui-card>
+</div>
